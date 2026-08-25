@@ -2,6 +2,7 @@ package com.kiit.nersentinel.ui.screen
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -26,14 +28,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
-import com.kiit.nersentinel.ui.components.IncidentOption
-import androidx.compose.foundation.layout.statusBarsPadding
-import android.util.Log
+import com.kiit.nersentinel.data.local.DatabaseProvider
+import com.kiit.nersentinel.data.repository.IncidentRepository
 import com.kiit.nersentinel.model.IncidentReport
+import com.kiit.nersentinel.ui.components.IncidentOption
+import com.kiit.nersentinel.viewmodel.ReportViewModel
+import com.kiit.nersentinel.viewmodel.ReportViewModelFactory
 
 @Composable
 fun ReportIncidentScreen() {
+
+    val context = LocalContext.current
+
+    val database = remember {
+        DatabaseProvider.getDatabase(context)
+    }
+
+    val repository = remember {
+        IncidentRepository(database.incidentDao())
+    }
+
+    val factory = remember {
+        ReportViewModelFactory(repository)
+    }
+
+    val reportViewModel: ReportViewModel = viewModel(
+        factory = factory
+    )
 
     var selectedIncident by remember {
         mutableStateOf<String?>(null)
@@ -50,8 +73,6 @@ fun ReportIncidentScreen() {
     var locationStatus by remember {
         mutableStateOf("Location not fetched")
     }
-
-    val context = LocalContext.current
 
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
@@ -103,6 +124,7 @@ fun ReportIncidentScreen() {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
@@ -239,9 +261,14 @@ fun ReportIncidentScreen() {
                     offlineSynced = false
                 )
 
-                Log.d("NER_SENTINEL", "Report created: $report")
+                reportViewModel.saveIncident(report)
 
-                locationStatus = "Report created successfully"
+                Log.d(
+                    "NER_SENTINEL",
+                    "Report saved offline: $report"
+                )
+
+                locationStatus = "Report saved offline successfully"
             },
             modifier = Modifier.fillMaxWidth()
         ) {
