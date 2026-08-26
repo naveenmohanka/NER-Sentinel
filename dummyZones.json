@@ -8,5 +8,10 @@
     "zone_id": "ZONE-B",
     "center": { "lat": 27.3500, "lng": 88.6200 },
     "operational_priority": "MODERATE"
+  },
+  {
+    "zone_id": "ZONE-C",
+    "center": { "lat": 27.3200, "lng": 88.6350 },
+    "operational_priority": "HIGH"
   }
 ]
