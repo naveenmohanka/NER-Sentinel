@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface IncidentDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertIncident(report: IncidentReport)
+    suspend fun insertIncident(report: IncidentReport): Long
 
     @Query("SELECT * FROM incident_reports ORDER BY timestamp DESC")
     fun getAllIncidents(): Flow<List<IncidentReport>>

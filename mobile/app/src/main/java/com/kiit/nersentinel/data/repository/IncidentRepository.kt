@@ -10,8 +10,8 @@ class IncidentRepository(
 
     suspend fun saveIncident(
         report: IncidentReport
-    ) {
-        incidentDao.insertIncident(report)
+    ): Long {
+        return incidentDao.insertIncident(report)
     }
 
     fun getAllIncidents(): Flow<List<IncidentReport>> {

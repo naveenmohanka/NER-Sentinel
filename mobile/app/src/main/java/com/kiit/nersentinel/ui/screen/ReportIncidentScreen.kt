@@ -36,11 +36,17 @@ import com.kiit.nersentinel.model.IncidentReport
 import com.kiit.nersentinel.ui.components.IncidentOption
 import com.kiit.nersentinel.viewmodel.ReportViewModel
 import com.kiit.nersentinel.viewmodel.ReportViewModelFactory
-
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.Alignment
 @Composable
 fun ReportIncidentScreen() {
 
     val context = LocalContext.current
+
 
     val database = remember {
         DatabaseProvider.getDatabase(context)
@@ -57,6 +63,8 @@ fun ReportIncidentScreen() {
     val reportViewModel: ReportViewModel = viewModel(
         factory = factory
     )
+
+    val reports by reportViewModel.reports.collectAsState()
 
     var selectedIncident by remember {
         mutableStateOf<String?>(null)
@@ -242,7 +250,9 @@ fun ReportIncidentScreen() {
         Button(
             onClick = {
 
-                if (selectedIncident == null) {
+                locationStatus = "Submit button clicked"
+
+                 if (selectedIncident == null) {
                     locationStatus = "Please select an incident type"
                     return@Button
                 }
@@ -261,18 +271,85 @@ fun ReportIncidentScreen() {
                     offlineSynced = false
                 )
 
-                reportViewModel.saveIncident(report)
+                reportViewModel.saveIncident(
+                    context = context,
+                    report = report
+                ) { result ->
 
-                Log.d(
-                    "NER_SENTINEL",
-                    "Report saved offline: $report"
-                )
+                    locationStatus = result
 
-                locationStatus = "Report saved offline successfully"
+                    Log.d(
+                        "NER_SENTINEL",
+                        result
+                    )
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Submit Report")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Recent Reports",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (reports.isEmpty()) {
+
+            Text(
+                text = "No reports submitted yet.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+        } else {
+
+            reports.take(5).forEach { report ->
+
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween
+                        ) {
+
+                            Text(
+                                text = report.reportType
+                                    .replace("_", " ")
+                                    .uppercase()
+                            )
+
+                            Text(
+                                text = if (report.offlineSynced) {
+                                    "SYNCED"
+                                } else {
+                                    "PENDING"
+                                }
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(6.dp)
+                        )
+
+                        Text(
+                            text = "Lat: ${report.lat}"
+                        )
+
+                        Text(
+                            text = "Lng: ${report.lng}"
+                        )
+                    }
+                }
+            }
         }
     }
 }
