@@ -6,7 +6,7 @@ import com.kiit.nersentinel.model.IncidentReport
 
 @Database(
     entities = [IncidentReport::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

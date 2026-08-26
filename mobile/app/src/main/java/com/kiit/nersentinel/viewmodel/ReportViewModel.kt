@@ -35,7 +35,6 @@ class ReportViewModel(
 
                 val incidentId =
                     repository.saveIncident(report)
-                    SyncScheduler.schedule(context)
                 val request = ReportRequest(
                     deviceId = report.deviceId,
                     lat = report.lat,
@@ -65,7 +64,7 @@ class ReportViewModel(
                     )
                 }
 
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
 
                 SyncScheduler.schedule(context)
 

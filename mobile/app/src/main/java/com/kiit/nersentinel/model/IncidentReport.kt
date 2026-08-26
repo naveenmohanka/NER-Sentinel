@@ -21,5 +21,7 @@ data class IncidentReport(
 
     val timestamp: Long = System.currentTimeMillis(),
 
+    val imageUri: String? = null,
+
     val offlineSynced: Boolean = false
 )

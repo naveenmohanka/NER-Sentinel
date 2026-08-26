@@ -42,6 +42,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.Alignment
+import android.net.Uri
+import coil.compose.AsyncImage
 @Composable
 fun ReportIncidentScreen() {
 
@@ -68,6 +70,10 @@ fun ReportIncidentScreen() {
 
     var selectedIncident by remember {
         mutableStateOf<String?>(null)
+    }
+
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
     }
 
     var latitude by remember {
@@ -121,6 +127,15 @@ fun ReportIncidentScreen() {
                 fetchLocation()
             } else {
                 locationStatus = "Location permission denied"
+            }
+        }
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri ->
+
+            if (uri != null) {
+                selectedImageUri = uri
             }
         }
 
@@ -200,6 +215,59 @@ fun ReportIncidentScreen() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
+            text = "Add Incident Photo",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        OutlinedButton(
+            onClick = {
+                imagePickerLauncher.launch("image/*")
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Select Photo from Gallery")
+        }
+
+        if (selectedImageUri != null) {
+            AsyncImage(
+                model = selectedImageUri,
+                contentDescription = "Selected incident image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+//        Text(
+//            text = "Add Incident Photo",
+//            style = MaterialTheme.typography.titleMedium
+//        )
+//
+//        OutlinedButton(
+//            onClick = {
+//                imagePickerLauncher.launch("image/*")
+//            },
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            Text("Select Photo from Gallery")
+//        }
+//
+//        if (selectedImageUri != null) {
+//
+//            AsyncImage(
+//                model = selectedImageUri,
+//                contentDescription = "Selected incident image",
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(220.dp)
+//            )
+//        }
+
+//        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
             text = "Location",
             style = MaterialTheme.typography.titleMedium
         )
@@ -268,7 +336,8 @@ fun ReportIncidentScreen() {
                     lng = longitude!!,
                     reportType = selectedIncident!!,
                     timestamp = System.currentTimeMillis(),
-                    offlineSynced = false
+                    offlineSynced = false,
+                    imageUri = selectedImageUri?.toString()
                 )
 
                 reportViewModel.saveIncident(

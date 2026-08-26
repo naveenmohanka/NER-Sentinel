@@ -15,7 +15,9 @@ object DatabaseProvider {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "ner_sentinel_database"
-            ).build()
+            )
+                .fallbackToDestructiveMigration(true)
+                .build()
 
             INSTANCE = instance
 

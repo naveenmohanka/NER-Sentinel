@@ -24,7 +24,8 @@ object SyncScheduler {
             .getInstance(context)
             .enqueueUniqueWork(
                 "incident_sync_work",
-                ExistingWorkPolicy.REPLACE,                request
+                ExistingWorkPolicy.REPLACE,
+                request
             )
     }
 }
