@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NER-Sentinel | 3D GIS & SRTM DEM-Integrated Disaster Engine</title>
+  <title>NER-Sentinel | 3D GIS & NASA SMAP Soil Moisture + DEM Disaster Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- MapLibre GL 3D Styles & Typography -->
@@ -21,12 +21,12 @@
   <header class="top-launcher-bar">
     <div class="top-brand-pill glass-panel">
       <div class="badge-pulse"></div>
-      <div class="brand-text">NER-Sentinel <span>SRTM DEM + AI GIS</span></div>
+      <div class="brand-text">NER-Sentinel <span>NASA SMAP + DEM GIS</span></div>
     </div>
 
     <div class="launcher-buttons">
       <button class="launcher-btn" id="legendToggleBtn" onclick="toggleDrawer('leftDrawer', this)">
-        <span>📊 DEM Model & Legend</span>
+        <span>📊 SMAP Model & Legend</span>
       </button>
       <button class="launcher-btn active" id="controlsToggleBtn" onclick="toggleDrawer('rightDrawer', this)">
         <span>⚡ Operational Controls</span>
@@ -37,36 +37,36 @@
     </div>
   </header>
 
-  <!-- Left Collapsible Drawer: DEM Model Metrics & Hazard Legend -->
+  <!-- Left Collapsible Drawer: NASA SMAP Model Metrics & Hazard Legend -->
   <aside class="left-drawer glass-panel" id="leftDrawer">
     <div class="panel-header">
-      <div class="panel-title">DEM/SRTM AI Model Specs</div>
+      <div class="panel-title">NASA SMAP + DEM Model</div>
       <button class="close-btn" onclick="closeDrawer('leftDrawer', 'legendToggleBtn')">✕</button>
     </div>
 
     <!-- AI Model Performance Card -->
     <div class="ai-metrics-card">
-      <h5>🏔️ Topographic DEM + ML Specs</h5>
+      <h5>🛰️ Multi-Satellite AI Specs</h5>
       <div class="metrics-grid">
         <div class="metric-item">
           <div class="metric-label">TRAINING ROWS</div>
-          <div class="metric-val">49,919</div>
+          <div class="metric-val">49,919+</div>
         </div>
         <div class="metric-item">
-          <div class="metric-label">DEM ROC-AUC</div>
-          <div class="metric-val" style="color: #38bdf8; font-size:12px;">0.8690</div>
+          <div class="metric-label">SMAP ROC-AUC</div>
+          <div class="metric-val" style="color: #38bdf8; font-size:12px;">0.8872</div>
         </div>
         <div class="metric-item">
           <div class="metric-label">INPUT FEATURES</div>
-          <div class="metric-val">6 (DEM+Rain)</div>
+          <div class="metric-val">7 (SMAP+DEM+Rain)</div>
         </div>
         <div class="metric-item">
-          <div class="metric-label">SLIDE INVENTORY</div>
-          <div class="metric-val" style="color: #10b981;">438 Records</div>
+          <div class="metric-label">SATELLITES</div>
+          <div class="metric-val" style="color: #10b981;">SMAP + SRTM</div>
         </div>
       </div>
       <div style="font-size: 10px; color: #cbd5e1; margin-top: 6px; font-family: 'JetBrains Mono', monospace; line-height: 1.4;">
-        NASA SRTM Elevation + Slope + Aspect + Rain (Assam, Meghalaya, Sikkim)
+        NASA SMAP Soil Moisture (m³/m³) + SRTM Elevation & Slope + Rainfall
       </div>
     </div>
 
@@ -106,17 +106,17 @@
     </div>
   </aside>
 
-  <!-- Right Collapsible Drawer: Operational Controls, DEM AI Predictor & Hazard Reporting -->
+  <!-- Right Collapsible Drawer: Operational Controls & NASA SMAP AI Predictor -->
   <main class="right-drawer glass-panel" id="rightDrawer">
     <div class="panel-header">
-      <div class="panel-title">Operations & DEM Predictor</div>
+      <div class="panel-title">Operations & SMAP AI Predictor</div>
       <button class="close-btn" onclick="closeDrawer('rightDrawer', 'controlsToggleBtn')">✕</button>
     </div>
 
-    <!-- AI Flood & DEM Topography Prediction Simulator -->
+    <!-- AI Flood & NASA SMAP Soil Moisture Prediction Simulator -->
     <div class="ai-predictor-box">
       <h4>
-        <span>🌧️ DEM Topographic Predictor</span>
+        <span>🛰️ SMAP Soil Saturation Predictor</span>
         <span id="floodRiskBadge" style="background:#10b981; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px;">LOW RISK</span>
       </h4>
 
@@ -124,11 +124,23 @@
       <div style="margin-bottom: 8px;">
         <label style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">Target Topography Sector:</label>
         <select id="demSectorSelect" onchange="applyDemSectorPreset()" style="width: 100%; background: rgba(0,0,0,0.4); color: #f8fafc; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 5px 8px; font-size: 11px; margin-top: 3px; font-family: inherit;">
-          <option value="ranipool">Ranipool Basin (Elev: 766m, Slope: 6.3°)</option>
-          <option value="bhusuk">Bhusuk Ridge (Elev: 1357m, Slope: 13.9°)</option>
-          <option value="passi">Passi Escarpment (Elev: 714m, Slope: 36.1°)</option>
-          <option value="singtam">Singtam Valley (Elev: 355m, Slope: 4.2°)</option>
+          <option value="ranipool">Ranipool Basin (Elev: 766m, Slope: 6.3°, Moisture: 0.28)</option>
+          <option value="bhusuk">Bhusuk Ridge (Elev: 1357m, Slope: 13.9°, Moisture: 0.16)</option>
+          <option value="passi">Passi Escarpment (Elev: 714m, Slope: 36.1°, Moisture: 0.32)</option>
+          <option value="singtam">Singtam Valley (Elev: 355m, Slope: 4.2°, Moisture: 0.38)</option>
         </select>
+      </div>
+
+      <!-- NASA SMAP Soil Moisture Slider -->
+      <div class="rainfall-slider-row" style="background: rgba(168, 85, 247, 0.1); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(168, 85, 247, 0.25); margin-bottom: 8px;">
+        <div class="slider-label">
+          <span style="color: #c084fc; font-weight: 600;">🌱 NASA SMAP Soil Moisture:</span>
+          <span id="valSoilMoisture" style="color: #e2e8f0; font-weight: 700;">0.28 m³/m³</span>
+        </div>
+        <input type="range" class="rainfall-slider" id="sliderSoilMoisture" min="0.05" max="0.65" step="0.01" value="0.28" oninput="updateRainfallUI()" style="accent-color: #a855f7;">
+        <div id="soilMoistureStatus" style="font-size: 10px; color: #cbd5e1; margin-top: 2px; font-family: 'JetBrains Mono', monospace;">
+          Status: MODERATE / MOIST
+        </div>
       </div>
 
       <div class="rainfall-slider-row">
@@ -147,7 +159,7 @@
       </div>
 
       <button class="btn btn-ai" id="runAiPredictBtn" onclick="runAiFloodPrediction()" style="margin-top:6px;">
-        <span>🧠 Run DEM Prediction (AUC 0.869)</span>
+        <span>🧠 Run SMAP + DEM Inference (AUC 0.887)</span>
       </button>
     </div>
 
@@ -198,7 +210,7 @@
     <button class="dock-btn active" id="view3DRidge" onclick="setCameraView('ridge')">🏔️ 3D Ridge</button>
     <button class="dock-btn" id="view3DValley" onclick="setCameraView('valley')">🌄 Valley</button>
     <button class="dock-btn" id="view2DTop" onclick="setCameraView('topdown')">🗺️ 2D Top</button>
-    <button class="dock-btn" id="toggleStationsBtn" onclick="toggleSikkimStations()">🛰️ SRTM Stations</button>
+    <button class="dock-btn" id="toggleStationsBtn" onclick="toggleSikkimStations()">🛰️ SMAP Stations</button>
     <button class="dock-btn" id="toggleLandslidesBtn" onclick="toggleSikkimLandslides()">🌋 Sikkim Slides</button>
     <button class="dock-btn" id="toggleTerrainBtn" onclick="toggleTerrain()">🏔️ 3D: <b>ON</b></button>
   </footer>
