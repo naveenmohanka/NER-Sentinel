@@ -1,13 +1,36 @@
 /**
- * NER-Sentinel - 3D GIS Intelligence & Terrain Early Warning Engine
+ * NER-Sentinel - 3D GIS Operational Intelligence & Dijkstra Evacuation Engine
  * Sector: Gangtok, Sikkim (Himalayan Range)
  */
 
 // Global State
-let mockZoneData = [];
-let is3DEnabled = true;
+let mockZoneData = [
+  { zone_id: "ZONE-A", center: { lat: 27.3314, lng: 88.6138 }, operational_priority: "CRITICAL" },
+  { zone_id: "ZONE-B", center: { lat: 27.3500, lng: 88.6200 }, operational_priority: "MODERATE" },
+  { zone_id: "ZONE-C", center: { lat: 27.3200, lng: 88.6350 }, operational_priority: "HIGH" }
+];
 
-// ---------- 1. 3D MAP INITIALIZATION ----------
+const evacuationCamps = [
+  { name: "Camp Gangtok Central", lat: 27.3200, lng: 88.6280 },
+  { name: "Camp Ranipool",        lat: 27.2900, lng: 88.6150 },
+  { name: "Camp Tadong",          lat: 27.3150, lng: 88.6400 }
+];
+
+const START_POINT = { lat: 27.3450, lng: 88.6000 };
+const CAMP_POINT  = { lat: 27.3200, lng: 88.6280 };
+const BBOX = { south: 27.28, west: 88.58, north: 27.40, east: 88.66 };
+
+let roadGraphNodes = {};
+let roadGraphEdges = [];
+let userMarker = null;
+let zoneMarkers = [];
+let userReportedHazards = [];
+let is3DEnabled = true;
+let isHazardReportMode = false;
+let selectedHazardType = 'landslide'; // 'landslide', 'flood', 'blockage'
+let lastComputedRouteType = null; // 'preset' or 'gps'
+
+// ================= 1. 3D MAP INITIALIZATION =================
 const gangtokCenter = [88.6138, 27.3314];
 
 const map = new maplibregl.Map({
@@ -15,7 +38,7 @@ const map = new maplibregl.Map({
   style: {
     version: 8,
     sources: {
-      // Photorealistic Satellite Base Layer (Esri World Imagery)
+      // Photorealistic Satellite Base (Esri World Imagery)
       'satellite-tiles': {
         type: 'raster',
         tiles: [
@@ -58,228 +81,562 @@ const map = new maplibregl.Map({
     }
   },
   center: gangtokCenter,
-  zoom: 13.6,
+  zoom: 13.5,
   pitch: 65,      // 3D Angle Tilt
-  bearing: -35,   // 3D Direction Angle
-  maxPitch: 85
+  bearing: -30,   // Mountain Direction Angle
+  maxPitch: 85,
+  antialias: true
 });
 
-// Add 3D Navigation Controls (Zoom, Pitch, Compass)
-map.addControl(new maplibregl.NavigationControl({
-  visualizePitch: true
-}), 'top-right');
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.dragRotate.enable();
+map.touchZoomRotate.enableRotation();
 
-// ---------- 2. GEOJSON ROUTES DEFINITIONS ----------
-const primaryRouteGeoJSON = {
-  type: "Feature",
-  properties: { name: "Primary Corridor (Standard Highway)" },
-  geometry: {
-    type: "LineString",
-    coordinates: [
-      [88.6000, 27.3450],
-      [88.6070, 27.3400],
-      [88.6138, 27.3314], // Passes right through Zone A
-      [88.6200, 27.3250],
-      [88.6280, 27.3200]
-    ]
-  }
-};
-
-const alternateRouteGeoJSON = {
-  type: "Feature",
-  properties: { name: "Alternate Safe Evacuation Bypass" },
-  geometry: {
-    type: "LineString",
-    coordinates: [
-      [88.6000, 27.3450],
-      [88.5950, 27.3350],
-      [88.6000, 27.3250],
-      [88.6150, 27.3180],
-      [88.6280, 27.3200]
-    ]
-  }
-};
-
-// Helper: Generate polygon circle geometry for 3D drape rendering
-function createGeoJSONCircle(center, radiusInMeters, points = 64) {
-  const coords = { latitude: center.lat, longitude: center.lng };
-  const km = radiusInMeters / 1000;
-  const ret = [];
-  const distanceX = km / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
-  const distanceY = km / 110.574;
-
-  for (let i = 0; i < points; i++) {
-    const theta = (i / points) * (2 * Math.PI);
-    const x = distanceX * Math.cos(theta);
-    const y = distanceY * Math.sin(theta);
-    ret.push([coords.longitude + x, coords.latitude + y]);
-  }
-  ret.push(ret[0]);
-  return ret;
+// Haversine distance in meters
+function haversine(a, b) {
+  const R = 6371000;
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// ---------- 3. DATA FETCHER (API Contract) ----------
-function fetchMockZoneData() {
-  return fetch("dummyZones.json")
-    .then(response => response.json());
+// Priority Color Helper
+function getZoneColor(priority) {
+  if (priority === "CRITICAL") return "#ef4444";
+  if (priority === "HIGH") return "#f97316";
+  if (priority === "MODERATE") return "#eab308";
+  return "#10b981";
 }
 
-// Priority to Color Helper
-function getPriorityColor(priority) {
-  switch (priority) {
-    case "CRITICAL": return "#ef4444";
-    case "HIGH": return "#f97316";
-    case "MODERATE": return "#eab308";
-    default: return "#10b981";
-  }
-}
+// Draw Risk Zones and Evacuation Camps
+function renderZonesAndCamps() {
+  zoneMarkers.forEach(m => m.remove());
+  zoneMarkers = [];
 
-// Convert Zone array into GeoJSON FeatureCollection
-function buildZonesGeoJSON(zones) {
-  return {
-    type: "FeatureCollection",
-    features: zones.map(zone => {
-      const color = getPriorityColor(zone.operational_priority);
-      const radius = zone.zone_id === "ZONE-A" ? 750 : 650;
-      const polygonCoords = createGeoJSONCircle(zone.center, radius);
+  // 1. Draw Default Risk Zones
+  mockZoneData.forEach(zone => {
+    const el = document.createElement('div');
+    el.style.width = '20px';
+    el.style.height = '20px';
+    el.style.borderRadius = '50%';
+    el.style.background = getZoneColor(zone.operational_priority);
+    el.style.border = '2px solid white';
+    el.style.boxShadow = '0 0 12px ' + getZoneColor(zone.operational_priority);
+    el.style.cursor = 'pointer';
 
-      return {
-        type: "Feature",
-        properties: {
-          zone_id: zone.zone_id,
-          priority: zone.operational_priority,
-          color: color,
-          lat: zone.center.lat,
-          lng: zone.center.lng
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: [polygonCoords]
-        }
-      };
-    })
-  };
-}
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([zone.center.lng, zone.center.lat])
+      .setPopup(new maplibregl.Popup().setHTML(`
+        <div style="font-size:14px; font-weight:700; color:#fff;">${zone.zone_id}</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Priority: <b style="color:${getZoneColor(zone.operational_priority)}">${zone.operational_priority}</b></div>
+        <div style="font-size:11px; color:#64748b; margin-top:4px;">Landslide Risk Sector (400m Buffer)</div>
+      `))
+      .addTo(map);
 
-// ---------- 4. RENDER / UPDATE LAYERS ON 3D MAP ----------
-function update3DMapZones(zones) {
-  const zoneGeoJSON = buildZonesGeoJSON(zones);
-  const source = map.getSource('hazard-zones-source');
-  if (source) {
-    source.setData(zoneGeoJSON);
-  }
-}
-
-function checkRouteSafety(zones) {
-  const zoneA = zones.find(z => z.zone_id === "ZONE-A");
-  const isBlocked = zoneA && zoneA.operational_priority === "CRITICAL";
-
-  const activeRoute = isBlocked ? alternateRouteGeoJSON : primaryRouteGeoJSON;
-  const routeColor = isBlocked ? "#10b981" : "#38bdf8";
-
-  const routeSource = map.getSource('evac-route-source');
-  if (routeSource) {
-    routeSource.setData(activeRoute);
-    map.setPaintProperty('evac-route-line', 'line-color', routeColor);
-    map.setPaintProperty('evac-route-glow', 'line-color', routeColor);
-  }
-}
-
-// ---------- 5. MAP LOAD EVENT & LAYER REGISTRATION ----------
-map.on('load', () => {
-  // 1. Register Evacuation Route Layer (With 3D Glow)
-  map.addSource('evac-route-source', {
-    type: 'geojson',
-    data: alternateRouteGeoJSON
+    zoneMarkers.push(marker);
   });
 
-  // Route Outer Glow
-  map.addLayer({
-    id: 'evac-route-glow',
-    type: 'line',
-    source: 'evac-route-source',
-    layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: {
-      'line-color': '#10b981',
-      'line-width': 12,
-      'line-opacity': 0.35,
-      'line-blur': 4
-    }
-  });
+  // 2. Draw Evacuation Camps
+  evacuationCamps.forEach(camp => {
+    const el = document.createElement('div');
+    el.innerHTML = '⛺';
+    el.style.fontSize = '22px';
+    el.style.filter = 'drop-shadow(0 0 8px rgba(16,185,129,0.8))';
+    el.style.cursor = 'pointer';
 
-  // Route Core Line
-  map.addLayer({
-    id: 'evac-route-line',
-    type: 'line',
-    source: 'evac-route-source',
-    layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: {
-      'line-color': '#10b981',
-      'line-width': 5,
-      'line-opacity': 0.95
-    }
-  });
-
-  // 2. Register Hazard Zones Source & 3D Drapes
-  map.addSource('hazard-zones-source', {
-    type: 'geojson',
-    data: { type: "FeatureCollection", features: [] }
-  });
-
-  // Hazard Zone Polygon Fill (Draped over 3D Himalayan Terrain)
-  map.addLayer({
-    id: 'hazard-zones-fill',
-    type: 'fill',
-    source: 'hazard-zones-source',
-    paint: {
-      'fill-color': ['get', 'color'],
-      'fill-opacity': 0.45
-    }
-  });
-
-  // Hazard Zone Outer Border
-  map.addLayer({
-    id: 'hazard-zones-stroke',
-    type: 'line',
-    source: 'hazard-zones-source',
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': 3,
-      'line-opacity': 0.9
-    }
-  });
-
-  // 3. Interactive Popups on clicking 3D hazard zones
-  map.on('click', 'hazard-zones-fill', (e) => {
-    const props = e.features[0].properties;
-    new maplibregl.Popup()
-      .setLngLat(e.lngLat)
-      .setHTML(`
-        <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:4px;">${props.zone_id}</div>
-        <div style="font-size:12px; color:#94a3b8;">Risk Level: <b style="color:${props.color}">${props.priority}</b></div>
-        <div style="font-size:11px; color:#64748b; margin-top:4px;">Himalayan 3D Landslide Sector</div>
-      `)
+    new maplibregl.Marker({ element: el })
+      .setLngLat([camp.lng, camp.lat])
+      .setPopup(new maplibregl.Popup().setHTML(`
+        <div style="font-size:13px; font-weight:700; color:#10b981;">${camp.name}</div>
+        <div style="font-size:11px; color:#94a3b8;">Designated Safe Evacuation Zone</div>
+      `))
       .addTo(map);
   });
+}
 
-  map.on('mouseenter', 'hazard-zones-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'hazard-zones-fill', () => { map.getCanvas().style.cursor = ''; });
-
-  // 4. Initial Fetch & Render
-  fetchMockZoneData()
-    .then(zones => {
-      mockZoneData = zones;
-      update3DMapZones(mockZoneData);
-      checkRouteSafety(mockZoneData);
-    })
-    .catch(err => {
-      console.error("Failed to load dummyZones.json:", err);
-    });
+map.on('load', () => {
+  renderZonesAndCamps();
+  loadStoredRouteIfAny();
 });
 
-// ---------- 6. CAMERA PRESET VIEWS ----------
+// ================= 2. INTERACTIVE USER HAZARD REPORTING =================
+function setHazardType(type, element) {
+  selectedHazardType = type;
+  document.querySelectorAll('.type-pill').forEach(pill => pill.classList.remove('active'));
+  element.classList.add('active');
+}
+
+function toggleHazardReportMode() {
+  isHazardReportMode = !isHazardReportMode;
+  const btn = document.getElementById('reportHazardBtn');
+
+  if (isHazardReportMode) {
+    btn.classList.add('active');
+    btn.innerHTML = '<span>⚠️ Click Anywhere on Map to Drop Hazard</span>';
+    map.getCanvas().style.cursor = 'crosshair';
+    setStatus('⚠️ <b>Hazard Report Mode Active:</b> Click any spot on the 3D map where landslide or flood has occurred.');
+  } else {
+    btn.classList.remove('active');
+    btn.innerHTML = '<span>⚠️ Report Hazard (Click Map)</span>';
+    map.getCanvas().style.cursor = '';
+    setStatus('Ready. Select an operational command.');
+  }
+}
+
+// Map Click Listener to Drop Hazard
+map.on('click', (e) => {
+  if (!isHazardReportMode) return;
+
+  const lat = e.lngLat.lat;
+  const lng = e.lngLat.lng;
+
+  let icon = '🪨';
+  let name = 'Landslide Blockage';
+  let radius = 500; // meters
+
+  if (selectedHazardType === 'flood') {
+    icon = '🌊';
+    name = 'Flash Flood Hazard';
+    radius = 600;
+  } else if (selectedHazardType === 'blockage') {
+    icon = '🚧';
+    name = 'Road Debris Obstruction';
+    radius = 350;
+  }
+
+  const hazardId = 'HAZARD-' + Date.now();
+
+  const hazardObj = {
+    id: hazardId,
+    type: selectedHazardType,
+    name: name,
+    icon: icon,
+    radius: radius,
+    center: { lat: lat, lng: lng }
+  };
+
+  // Create Marker Element
+  const el = document.createElement('div');
+  el.innerHTML = icon;
+  el.style.fontSize = '24px';
+  el.style.filter = 'drop-shadow(0 0 10px rgba(239,68,68,0.9))';
+  el.style.cursor = 'pointer';
+  el.style.animation = 'pulse-danger 1.5s infinite';
+
+  const marker = new maplibregl.Marker({ element: el })
+    .setLngLat([lng, lat])
+    .setPopup(new maplibregl.Popup().setHTML(`
+      <div style="font-size:14px; font-weight:700; color:#ef4444;">${icon} ${name}</div>
+      <div style="font-size:11px; color:#94a3b8; margin:4px 0;">Avoidance Radius: <b>${radius}m</b></div>
+      <button onclick="removeReportedHazard('${hazardId}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; width:100%; margin-top:4px;">Remove Hazard</button>
+    `))
+    .addTo(map);
+
+  hazardObj.marker = marker;
+  userReportedHazards.push(hazardObj);
+
+  setStatus(`🚨 <b>${name}</b> reported at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. Dynamically recalculating safe route...`);
+
+  // Auto-recalculate route if roads are loaded
+  if (Object.keys(roadGraphNodes).length > 0) {
+    if (lastComputedRouteType === 'gps') {
+      routeFromMyLocation();
+    } else {
+      computeAndStoreRoute();
+    }
+  }
+});
+
+function removeReportedHazard(hazardId) {
+  const index = userReportedHazards.findIndex(h => h.id === hazardId);
+  if (index !== -1) {
+    userReportedHazards[index].marker.remove();
+    userReportedHazards.splice(index, 1);
+    setStatus(`Hazard removed. Safe route updated.`);
+    if (Object.keys(roadGraphNodes).length > 0) {
+      if (lastComputedRouteType === 'gps') {
+        routeFromMyLocation();
+      } else {
+        computeAndStoreRoute();
+      }
+    }
+  }
+}
+
+function clearAllHazards() {
+  userReportedHazards.forEach(h => h.marker.remove());
+  userReportedHazards = [];
+  setStatus('All user-reported hazards cleared.');
+  if (Object.keys(roadGraphNodes).length > 0) {
+    computeAndStoreRoute();
+  }
+}
+
+// ================= 3. FETCH REAL ROADS (OVERPASS API) =================
+async function loadRealRoads() {
+  setStatus("📡 Fetching OpenStreetMap highway grid for Gangtok sector...");
+
+  const query = `
+    [out:json][timeout:25];
+    way["highway"](${BBOX.south},${BBOX.west},${BBOX.north},${BBOX.east});
+    (._;>;);
+    out body;
+  `;
+
+  try {
+    const response = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      body: query
+    });
+    const data = await response.json();
+
+    roadGraphNodes = {};
+    roadGraphEdges = [];
+
+    data.elements.forEach(el => {
+      if (el.type === "node") {
+        roadGraphNodes[el.id] = { lat: el.lat, lng: el.lon };
+      }
+    });
+
+    data.elements.forEach(el => {
+      if (el.type === "way" && el.nodes && el.nodes.length > 1) {
+        for (let i = 0; i < el.nodes.length - 1; i++) {
+          const a = el.nodes[i];
+          const b = el.nodes[i + 1];
+          if (roadGraphNodes[a] && roadGraphNodes[b]) {
+            const dist = haversine(roadGraphNodes[a], roadGraphNodes[b]);
+            roadGraphEdges.push({ from: a, to: b, dist: dist });
+          }
+        }
+      }
+    });
+
+    drawRoadNetwork();
+
+    setStatus(`✅ Loaded ${Object.keys(roadGraphNodes).length} junctions & ${roadGraphEdges.length} road segments.`);
+    document.getElementById('computeRouteBtn').disabled = false;
+  } catch (err) {
+    setStatus("❌ Failed to fetch roads: " + err);
+  }
+}
+
+function drawRoadNetwork() {
+  const features = roadGraphEdges.map(edge => ({
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: [
+        [roadGraphNodes[edge.from].lng, roadGraphNodes[edge.from].lat],
+        [roadGraphNodes[edge.to].lng, roadGraphNodes[edge.to].lat]
+      ]
+    }
+  }));
+
+  const geojson = { type: "FeatureCollection", features: features };
+
+  if (map.getSource('road-network')) {
+    map.getSource('road-network').setData(geojson);
+  } else {
+    map.addSource('road-network', { type: 'geojson', data: geojson });
+    map.addLayer({
+      id: 'road-network-layer',
+      type: 'line',
+      source: 'road-network',
+      paint: {
+        'line-color': '#94a3b8',
+        'line-width': 1.6,
+        'line-opacity': 0.65
+      }
+    });
+  }
+}
+
+function findNearestNode(point) {
+  let nearestId = null;
+  let minDist = Infinity;
+  Object.keys(roadGraphNodes).forEach(id => {
+    const d = haversine(point, roadGraphNodes[id]);
+    if (d < minDist) { minDist = d; nearestId = id; }
+  });
+  return nearestId;
+}
+
+// ================= 4. DIJKSTRA SAFEST ROUTING ALGORITHM (Avoids all hazards) =================
+function buildAdjacency() {
+  const adjacency = {};
+  Object.keys(roadGraphNodes).forEach(id => adjacency[id] = []);
+
+  const criticalZones = mockZoneData.filter(z => z.operational_priority === "CRITICAL");
+  const DEFAULT_BLOCK_RADIUS = 400; // meters
+
+  roadGraphEdges.forEach(edge => {
+    let weight = edge.dist;
+    const midpoint = {
+      lat: (roadGraphNodes[edge.from].lat + roadGraphNodes[edge.to].lat) / 2,
+      lng: (roadGraphNodes[edge.from].lng + roadGraphNodes[edge.to].lng) / 2
+    };
+
+    // 1. Check against Critical Zones
+    const isCriticalBlocked = criticalZones.some(zone => haversine(midpoint, zone.center) < DEFAULT_BLOCK_RADIUS);
+
+    // 2. Check against All User-Reported Unsafe Hazards (Landslides, Floods, Blockages)
+    const isUserHazardBlocked = userReportedHazards.some(h => haversine(midpoint, h.center) < h.radius);
+
+    if (isCriticalBlocked || isUserHazardBlocked) {
+      weight = Infinity; // Blocked road
+    }
+
+    adjacency[edge.from].push({ node: edge.to, weight });
+    adjacency[edge.to].push({ node: edge.from, weight });
+  });
+
+  return adjacency;
+}
+
+function dijkstra(adjacency, startNode, endNode) {
+  const distances = {}, prev = {}, visited = new Set();
+  const queue = new Set(Object.keys(adjacency));
+  Object.keys(adjacency).forEach(n => distances[n] = Infinity);
+  distances[startNode] = 0;
+
+  while (queue.size > 0) {
+    let current = null, smallest = Infinity;
+    queue.forEach(n => { if (distances[n] < smallest) { smallest = distances[n]; current = n; } });
+    if (current === null || current === endNode) break;
+    queue.delete(current);
+    visited.add(current);
+
+    adjacency[current].forEach(neighbor => {
+      if (visited.has(neighbor.node)) return;
+      const newDist = distances[current] + neighbor.weight;
+      if (newDist < distances[neighbor.node]) {
+        distances[neighbor.node] = newDist;
+        prev[neighbor.node] = current;
+      }
+    });
+  }
+
+  const path = [];
+  let node = endNode;
+  while (node !== undefined) { path.unshift(node); node = prev[node]; }
+  if (path[0] !== startNode) return { path: [], distance: Infinity };
+  return { path, distance: distances[endNode] };
+}
+
+function renderRouteOnMap(routeGeoJSON, color = '#38bdf8') {
+  if (map.getSource('shortest-route')) {
+    map.getSource('shortest-route').setData(routeGeoJSON);
+    map.setPaintProperty('shortest-route-line', 'line-color', color);
+    map.setPaintProperty('shortest-route-glow', 'line-color', color);
+  } else {
+    map.addSource('shortest-route', { type: 'geojson', data: routeGeoJSON });
+
+    // Outer Glow
+    map.addLayer({
+      id: 'shortest-route-glow',
+      type: 'line',
+      source: 'shortest-route',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': color,
+        'line-width': 12,
+        'line-opacity': 0.45,
+        'line-blur': 4
+      }
+    });
+
+    // Core Line
+    map.addLayer({
+      id: 'shortest-route-line',
+      type: 'line',
+      source: 'shortest-route',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': color,
+        'line-width': 5,
+        'line-opacity': 0.95
+      }
+    });
+  }
+}
+
+function computeAndStoreRoute() {
+  lastComputedRouteType = 'preset';
+  const startNode = findNearestNode(START_POINT);
+  const campNode = findNearestNode(CAMP_POINT);
+
+  const adjacency = buildAdjacency();
+  const result = dijkstra(adjacency, startNode, campNode);
+
+  if (result.path.length === 0) {
+    setStatus("⚠️ No safe path found: All connecting roads blocked by landslide/flood hazard buffer.");
+    return;
+  }
+
+  const coordinates = result.path.map(id => [roadGraphNodes[id].lng, roadGraphNodes[id].lat]);
+  const routeGeoJSON = {
+    type: "Feature",
+    properties: { distance: result.distance },
+    geometry: { type: "LineString", coordinates }
+  };
+
+  renderRouteOnMap(routeGeoJSON, '#38bdf8');
+  localStorage.setItem('lastEvacRoute', JSON.stringify(routeGeoJSON));
+
+  const totalHazards = userReportedHazards.length + mockZoneData.filter(z => z.operational_priority === 'CRITICAL').length;
+  setStatus(`📍 Preset Safe Route computed: ${Math.round(result.distance)}m (Safely avoiding ${totalHazards} active hazard zones).`);
+}
+
+function loadStoredRouteIfAny() {
+  const saved = localStorage.getItem('lastEvacRoute');
+  if (!saved) return;
+  try {
+    const routeGeoJSON = JSON.parse(saved);
+    renderRouteOnMap(routeGeoJSON, '#38bdf8');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ================= 5. GPS GEOLOCATION & NEAREST CAMP ROUTING =================
+function getUserLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject("Geolocation is not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      err => reject(err.message),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
+
+function findNearestCamp(userLocation) {
+  let nearest = null, minDist = Infinity;
+  evacuationCamps.forEach(camp => {
+    const d = haversine(userLocation, camp);
+    if (d < minDist) { minDist = d; nearest = camp; }
+  });
+  return nearest;
+}
+
+async function routeFromMyLocation() {
+  lastComputedRouteType = 'gps';
+  if (Object.keys(roadGraphNodes).length === 0) {
+    alert("Please click '1. Load Real Roads (Overpass)' first to build the road network.");
+    return;
+  }
+
+  setStatus("🛰️ Requesting high-precision GPS coordinates from device...");
+
+  let userLocation;
+  try {
+    userLocation = await getUserLocation();
+  } catch (err) {
+    setStatus("❌ GPS Error: " + err);
+    return;
+  }
+
+  if (userMarker) {
+    userMarker.setLngLat([userLocation.lng, userLocation.lat]);
+  } else {
+    userMarker = new maplibregl.Marker({ color: "#38bdf8" })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .setPopup(new maplibregl.Popup().setText("You Are Here (Live GPS)"))
+      .addTo(map);
+  }
+
+  const nearestCamp = findNearestCamp(userLocation);
+  setStatus(`🔍 Nearest shelter: ${nearestCamp.name}. Calculating safest Dijkstra corridor...`);
+
+  const startNode = findNearestNode(userLocation);
+  const campNode = findNearestNode(nearestCamp);
+  const adjacency = buildAdjacency();
+  const result = dijkstra(adjacency, startNode, campNode);
+
+  if (result.path.length === 0) {
+    setStatus(`⚠️ Hazard alert: No safe corridor found to ${nearestCamp.name}. Roads intersect landslide/flood zones.`);
+    return;
+  }
+
+  const coordinates = result.path.map(id => [roadGraphNodes[id].lng, roadGraphNodes[id].lat]);
+  const routeGeoJSON = {
+    type: "Feature",
+    properties: {
+      distance: result.distance,
+      camp: nearestCamp.name,
+      userLocation: userLocation,
+      timestamp: new Date().toISOString()
+    },
+    geometry: { type: "LineString", coordinates }
+  };
+
+  renderRouteOnMap(routeGeoJSON, '#10b981');
+  localStorage.setItem('lastEvacRoute', JSON.stringify(routeGeoJSON));
+
+  // Auto-download GeoJSON archive
+  const blob = new Blob([JSON.stringify(routeGeoJSON, null, 2)], { type: "application/geo+json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `evac-route-${Date.now()}.geojson`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  setStatus(`🛡️ Evacuation Path to ${nearestCamp.name}: ${Math.round(result.distance)}m. Safely routing around hazards.`);
+}
+
+// ================= 6. COLLAPSIBLE DRAWER & FULL MAP CONTROLS =================
+function toggleDrawer(drawerId, btn) {
+  const drawer = document.getElementById(drawerId);
+  const isCurrentlyCollapsed = drawer.classList.contains('collapsed');
+
+  if (isCurrentlyCollapsed) {
+    drawer.classList.remove('collapsed');
+    btn.classList.add('active');
+  } else {
+    drawer.classList.add('collapsed');
+    btn.classList.remove('active');
+  }
+}
+
+function closeDrawer(drawerId, btnId) {
+  const drawer = document.getElementById(drawerId);
+  const btn = document.getElementById(btnId);
+  drawer.classList.add('collapsed');
+  if (btn) btn.classList.remove('active');
+}
+
+function toggleFullMap() {
+  const left = document.getElementById('leftDrawer');
+  const right = document.getElementById('rightDrawer');
+  const legendBtn = document.getElementById('legendToggleBtn');
+  const controlsBtn = document.getElementById('controlsToggleBtn');
+
+  const areBothClosed = left.classList.contains('collapsed') && right.classList.contains('collapsed');
+
+  if (areBothClosed) {
+    right.classList.remove('collapsed');
+    controlsBtn.classList.add('active');
+  } else {
+    left.classList.add('collapsed');
+    right.classList.add('collapsed');
+    legendBtn.classList.remove('active');
+    controlsBtn.classList.remove('active');
+  }
+}
+
+// ================= 7. CAMERA & TERRAIN CONTROLS =================
 function setCameraView(preset) {
-  document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.dock-btn').forEach(btn => btn.classList.remove('active'));
 
   if (preset === 'ridge') {
     document.getElementById('view3DRidge').classList.add('active');
@@ -311,32 +668,34 @@ function setCameraView(preset) {
   }
 }
 
-// ---------- 7. TOGGLE 3D ELEVATION TERRAIN ----------
 function toggleTerrain() {
   const btn = document.getElementById('toggleTerrainBtn');
   if (is3DEnabled) {
     map.setTerrain(null);
-    btn.innerHTML = `<span>🏔️ 3D Elevation: <b>OFF</b></span>`;
+    btn.innerHTML = `🏔️ 3D: <b>OFF</b>`;
     is3DEnabled = false;
   } else {
     map.setTerrain({ source: 'terrain-dem', exaggeration: 1.8 });
-    btn.innerHTML = `<span>🏔️ 3D Elevation: <b>ON</b></span>`;
+    btn.innerHTML = `🏔️ 3D: <b>ON</b>`;
     is3DEnabled = true;
   }
 }
 
-// ---------- 8. INTERACTIVE DEMO TOGGLE BUTTON ----------
-document.getElementById("toggleZoneA").addEventListener("click", () => {
+function setStatus(msg) {
+  document.getElementById('status').innerHTML = msg;
+}
+
+// ================= 8. BUTTON HOOKS =================
+document.getElementById('loadRoadsBtn').addEventListener('click', loadRealRoads);
+document.getElementById('computeRouteBtn').addEventListener('click', computeAndStoreRoute);
+document.getElementById('myLocationBtn').addEventListener('click', routeFromMyLocation);
+
+document.getElementById('toggleZoneABtn').addEventListener('click', () => {
   const zoneA = mockZoneData.find(z => z.zone_id === "ZONE-A");
-
-  if (zoneA) {
-    if (zoneA.operational_priority === "CRITICAL") {
-      zoneA.operational_priority = "MODERATE";
-    } else {
-      zoneA.operational_priority = "CRITICAL";
-    }
-
-    update3DMapZones(mockZoneData);
-    checkRouteSafety(mockZoneData);
+  zoneA.operational_priority = zoneA.operational_priority === "CRITICAL" ? "MODERATE" : "CRITICAL";
+  renderZonesAndCamps();
+  setStatus(`⚡ ZONE-A toggled to <b>${zoneA.operational_priority}</b>.`);
+  if (Object.keys(roadGraphNodes).length > 0) {
+    computeAndStoreRoute();
   }
 });

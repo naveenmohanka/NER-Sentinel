@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NER-Sentinel | 3D GIS Intelligence & Landslide Early Warning</title>
+  <title>NER-Sentinel | 3D GIS Intelligence & Evacuation Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- MapLibre GL 3D Terrain Styles & Typography -->
+  <!-- MapLibre GL 3D Styles & Typography -->
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   
@@ -14,54 +14,130 @@
 </head>
 <body>
 
-  <!-- 3D WebGL Map Container -->
+  <!-- 3D WebGL Map Container (Takes 100% full screen) -->
   <div id="map"></div>
 
-  <!-- Top Header Overlay -->
-  <header class="top-header">
-    <div class="badge-pulse"></div>
-    <div class="title-box">
-      <h1>NER-Sentinel 3D GIS Intelligence</h1>
-      <p>Himalayan Terrain • Gangtok Sector • Live Landslide Early Warning</p>
+  <!-- Top Minimal Floating Launcher Bar -->
+  <header class="top-launcher-bar">
+    <div class="top-brand-pill glass-panel">
+      <div class="badge-pulse"></div>
+      <div class="brand-text">NER-Sentinel <span>3D GIS Gangtok</span></div>
+    </div>
+
+    <div class="launcher-buttons">
+      <button class="launcher-btn" id="legendToggleBtn" onclick="toggleDrawer('leftDrawer', this)">
+        <span>📊 Legend & Shelters</span>
+      </button>
+      <button class="launcher-btn active" id="controlsToggleBtn" onclick="toggleDrawer('rightDrawer', this)">
+        <span>⚡ Operational Controls</span>
+      </button>
+      <button class="launcher-btn" onclick="toggleFullMap()">
+        <span>👁️ Full Map Mode</span>
+      </button>
     </div>
   </header>
 
-  <!-- Legend Overlay -->
-  <aside class="legend-panel">
-    <div class="legend-title">Hazard Priority Zones</div>
-    <div class="legend-item"><span class="dot" style="color: #ef4444; background: #ef4444;"></span> <span>CRITICAL (Immediate Evac)</span></div>
-    <div class="legend-item"><span class="dot" style="color: #f97316; background: #f97316;"></span> <span>HIGH (Warning Alert)</span></div>
-    <div class="legend-item"><span class="dot" style="color: #eab308; background: #eab308;"></span> <span>MODERATE (Watch Mode)</span></div>
-    <div class="legend-item"><span class="dot" style="color: #10b981; background: #10b981;"></span> <span>SAFE / Normal</span></div>
-    
-    <div class="divider"></div>
-    
-    <div class="legend-title">3D Evacuation Routes</div>
-    <div class="legend-item"><span class="route-line" style="color: #38bdf8; background: #38bdf8;"></span> <span>Primary Route (Direct)</span></div>
-    <div class="legend-item"><span class="route-line" style="color: #10b981; background: #10b981;"></span> <span>Alternate Safe Route (Bypass)</span></div>
-  </aside>
-
-  <!-- Floating Control Toolbar -->
-  <div class="control-toolbar">
-    <!-- Camera View Presets -->
-    <div class="camera-presets">
-      <button class="preset-btn active" id="view3DRidge" onclick="setCameraView('ridge')">🏔️ 3D Himalayan Ridge</button>
-      <button class="preset-btn" id="view3DValley" onclick="setCameraView('valley')">🌄 Valley Low-Angle</button>
-      <button class="preset-btn" id="view2DTop" onclick="setCameraView('topdown')">🗺️ 2D Top-Down</button>
+  <!-- Left Collapsible Drawer: Hazard Legend & Camps -->
+  <aside class="left-drawer glass-panel" id="leftDrawer">
+    <div class="panel-header">
+      <div class="panel-title">Hazard Zones & Shelters</div>
+      <button class="close-btn" onclick="closeDrawer('leftDrawer', 'legendToggleBtn')">✕</button>
     </div>
 
-    <!-- Toggle 3D Terrain Button -->
-    <button class="btn" id="toggleTerrainBtn" onclick="toggleTerrain()">
-      <span>🏔️ 3D Elevation: <b>ON</b></span>
-    </button>
+    <div class="legend-section">
+      <div class="legend-subhead">Hazard Priorities</div>
+      <div class="legend-item"><span class="dot" style="color: #ef4444; background: #ef4444;"></span> <span>CRITICAL (400m Buffer)</span></div>
+      <div class="legend-item"><span class="dot" style="color: #f97316; background: #f97316;"></span> <span>HIGH (Warning Alert)</span></div>
+      <div class="legend-item"><span class="dot" style="color: #eab308; background: #eab308;"></span> <span>MODERATE (Watch Mode)</span></div>
+      <div class="legend-item"><span class="dot" style="color: #10b981; background: #10b981;"></span> <span>SAFE / Normal</span></div>
+    </div>
+    
+    <div class="divider"></div>
 
-    <!-- Interactive Simulation Button -->
-    <button class="btn btn-primary" id="toggleZoneA">
-      <span>⚡ Toggle ZONE-A Risk Status</span>
-    </button>
-  </div>
+    <div class="legend-section">
+      <div class="legend-subhead">Reported Disasters</div>
+      <div class="legend-item"><span>🪨 Landslide Incident (500m Avoid)</span></div>
+      <div class="legend-item"><span>🌊 Flash Flood Zone (600m Avoid)</span></div>
+      <div class="legend-item"><span>🚧 Road Blockage / Debris (350m Avoid)</span></div>
+    </div>
 
-  <!-- MapLibre GL JS & Main Application Logic -->
+    <div class="divider"></div>
+
+    <div class="legend-section">
+      <div class="legend-subhead">3D Evacuation Paths</div>
+      <div class="legend-item"><span class="route-indicator" style="color: #38bdf8; background: #38bdf8;"></span> <span>Preset Dijkstra Corridor</span></div>
+      <div class="legend-item"><span class="route-indicator" style="color: #10b981; background: #10b981;"></span> <span>Live GPS Safe Route</span></div>
+      <div class="legend-item"><span class="route-indicator" style="color: #94a3b8; background: #94a3b8;"></span> <span>OSM Highway Graph</span></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="legend-section">
+      <div class="legend-subhead">Designated Shelters</div>
+      <div class="legend-item"><span>⛺ Camp Gangtok Central</span></div>
+      <div class="legend-item"><span>⛺ Camp Ranipool Sector</span></div>
+      <div class="legend-item"><span>⛺ Camp Tadong Area</span></div>
+    </div>
+  </aside>
+
+  <!-- Right Collapsible Drawer: Operational Controls & Hazard Reporting -->
+  <main class="right-drawer glass-panel" id="rightDrawer">
+    <div class="panel-header">
+      <div class="panel-title">Dijkstra Routing Engine</div>
+      <button class="close-btn" onclick="closeDrawer('rightDrawer', 'controlsToggleBtn')">✕</button>
+    </div>
+
+    <!-- Interactive User Hazard Reporting Tool -->
+    <div class="hazard-report-box">
+      <h4>
+        <span>🚨 Report Unsafe Disaster Point</span>
+        <button onclick="clearAllHazards()" style="background:transparent; border:none; color:#f87171; font-size:11px; cursor:pointer; text-decoration:underline;">Clear All</button>
+      </h4>
+      
+      <div class="hazard-type-selector">
+        <div class="type-pill active" onclick="setHazardType('landslide', this)">🪨 Landslide</div>
+        <div class="type-pill" onclick="setHazardType('flood', this)">🌊 Flood</div>
+        <div class="type-pill" onclick="setHazardType('blockage', this)">🚧 Blockage</div>
+      </div>
+
+      <button class="hazard-tool-btn" id="reportHazardBtn" onclick="toggleHazardReportMode()">
+        <span>⚠️ Report Hazard (Click Map)</span>
+      </button>
+    </div>
+    
+    <div class="action-btn-group">
+      <button class="btn btn-primary" id="loadRoadsBtn">
+        <span>📡 1. Load Real Roads (Overpass)</span>
+      </button>
+
+      <button class="btn" id="computeRouteBtn" disabled>
+        <span>⚡ 2. Compute Shortest Safe Route</span>
+      </button>
+
+      <button class="btn btn-gps" id="myLocationBtn">
+        <span>📍 Route from My Location (GPS)</span>
+      </button>
+
+      <button class="btn btn-warning" id="toggleZoneABtn">
+        <span>⚠️ Toggle ZONE-A Critical</span>
+      </button>
+    </div>
+
+    <!-- Live Status Console Box -->
+    <div class="status-console" id="status">
+      Click "1. Load Real Roads" to fetch the live highway network.
+    </div>
+  </main>
+
+  <!-- Bottom Right 3D Viewport Controls Dock -->
+  <footer class="bottom-dock">
+    <button class="dock-btn active" id="view3DRidge" onclick="setCameraView('ridge')">🏔️ 3D Ridge</button>
+    <button class="dock-btn" id="view3DValley" onclick="setCameraView('valley')">🌄 Valley</button>
+    <button class="dock-btn" id="view2DTop" onclick="setCameraView('topdown')">🗺️ 2D Top</button>
+    <button class="dock-btn" id="toggleTerrainBtn" onclick="toggleTerrain()">🏔️ 3D: <b>ON</b></button>
+  </footer>
+
+  <!-- MapLibre GL JS & Main Application Engine -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
