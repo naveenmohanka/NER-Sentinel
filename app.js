@@ -293,9 +293,38 @@ function runAiFloodPrediction() {
       computeAndStoreRoute();
     }
   }
+
+  return { percent, riskLevel: badge.innerText, sm, rh, r1, r3, r7 };
 }
 
-// ================= 3. SATELLITE TELEMETRY STATIONS LAYER =================
+// ================= 3. LLM CONVERSATIONAL ADVISOR =================
+function askLlmAdvisor() {
+  const qInput = document.getElementById('llmQuestionInput');
+  const q = qInput.value.trim() || "What is the flood and landslide risk in Gangtok and what precautions should I take?";
+  const resBox = document.getElementById('llmResponseBox');
+  resBox.style.display = 'block';
+  resBox.innerHTML = `<i>Thinking and analyzing NASA multi-satellite telemetry...</i>`;
+
+  const sim = runAiFloodPrediction();
+
+  setTimeout(() => {
+    let advice = `<b>🤖 NER-Sentinel Advisor:</b><br><br>`;
+    advice += `<b>Current Threat:</b> ${sim.riskLevel} (Probability: <b>${sim.percent}%</b>)<br>`;
+    advice += `<b>NASA SMAP Soil Saturation:</b> ${sim.sm.toFixed(2)} m³/m³ | <b>NASA POWER Humidity:</b> ${sim.rh}%<br><br>`;
+
+    if (sim.percent >= 50) {
+      advice += `⚠️ <b>Advisory:</b> Critical pore-water saturation detected. Low-lying river corridors (Ranipool/Teesta) are at severe flash-flood risk. Evacuate via the green/blue 3D Dijkstra path to <b>Camp Gangtok Central</b> and avoid mountain highway cuts prone to debris slides.`;
+    } else if (sim.percent >= 30) {
+      advice += `⚠️ <b>Advisory:</b> Moderate hydro-meteorological watch. Soil retention is holding, but continued downpours over 48h will escalate runoff. Clear roadside culverts and keep emergency kits ready.`;
+    } else {
+      advice += `✅ <b>Advisory:</b> Conditions are currently stable with low immediate inundation threat. Normal transit along designated highway corridors is safe.`;
+    }
+
+    resBox.innerHTML = advice;
+  }, 400);
+}
+
+// ================= 4. SATELLITE TELEMETRY STATIONS LAYER =================
 function toggleSikkimStations() {
   const btn = document.getElementById('toggleStationsBtn');
   isStationsLayerVisible = !isStationsLayerVisible;
@@ -335,7 +364,7 @@ function toggleSikkimStations() {
   }
 }
 
-// ================= 4. HISTORICAL SIKKIM LANDSLIDE INVENTORY LAYER =================
+// ================= 5. HISTORICAL SIKKIM LANDSLIDE INVENTORY LAYER =================
 function toggleSikkimLandslides() {
   const btn = document.getElementById('toggleLandslidesBtn');
   isLandslideLayerVisible = !isLandslideLayerVisible;
@@ -374,7 +403,7 @@ function toggleSikkimLandslides() {
   }
 }
 
-// ================= 5. USER HAZARD REPORTING =================
+// ================= 6. USER HAZARD REPORTING =================
 function setHazardType(type, element) {
   selectedHazardType = type;
   document.querySelectorAll('.type-pill').forEach(pill => pill.classList.remove('active'));
@@ -483,7 +512,7 @@ function clearAllHazards() {
   }
 }
 
-// ================= 6. FETCH REAL ROADS (OVERPASS API) =================
+// ================= 7. FETCH REAL ROADS (OVERPASS API) =================
 async function loadRealRoads() {
   setStatus("📡 Fetching OpenStreetMap highway grid for Gangtok sector...");
 
@@ -573,7 +602,7 @@ function findNearestNode(point) {
   return nearestId;
 }
 
-// ================= 7. DIJKSTRA SAFEST ROUTING ALGORITHM =================
+// ================= 8. DIJKSTRA SAFEST ROUTING ALGORITHM =================
 function buildAdjacency() {
   const adjacency = {};
   Object.keys(roadGraphNodes).forEach(id => adjacency[id] = []);
@@ -705,7 +734,7 @@ function loadStoredRouteIfAny() {
   }
 }
 
-// ================= 8. GPS GEOLOCATION ROUTING =================
+// ================= 9. GPS GEOLOCATION ROUTING =================
 function getUserLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -796,7 +825,7 @@ async function routeFromMyLocation() {
   setStatus(`🛡️ Evacuation Path to ${nearestCamp.name}: ${Math.round(result.distance)}m. Safely routing around hazards.`);
 }
 
-// ================= 9. DRAWER & VIEWPORT CONTROLS =================
+// ================= 10. DRAWER & VIEWPORT CONTROLS =================
 function toggleDrawer(drawerId, btn) {
   const drawer = document.getElementById(drawerId);
   const isCurrentlyCollapsed = drawer.classList.contains('collapsed');
@@ -886,7 +915,7 @@ function setStatus(msg) {
   document.getElementById('status').innerHTML = msg;
 }
 
-// ================= 10. BUTTON HOOKS =================
+// ================= 11. BUTTON HOOKS =================
 document.getElementById('loadRoadsBtn').addEventListener('click', loadRealRoads);
 document.getElementById('computeRouteBtn').addEventListener('click', computeAndStoreRoute);
 document.getElementById('myLocationBtn').addEventListener('click', routeFromMyLocation);

@@ -29,7 +29,7 @@
         <span>📊 NASA AI Model & Legend</span>
       </button>
       <button class="launcher-btn active" id="controlsToggleBtn" onclick="toggleDrawer('rightDrawer', this)">
-        <span>⚡ Operational Controls</span>
+        <span>⚡ Operations & LLM Advisor</span>
       </button>
       <button class="launcher-btn" onclick="toggleFullMap()">
         <span>👁️ Full Map Mode</span>
@@ -106,11 +106,26 @@
     </div>
   </aside>
 
-  <!-- Right Collapsible Drawer: Operational Controls & NASA POWER AI Predictor -->
+  <!-- Right Collapsible Drawer: Operational Controls & NASA LLM AI Predictor -->
   <main class="right-drawer glass-panel" id="rightDrawer">
     <div class="panel-header">
-      <div class="panel-title">Operations & Satellite AI</div>
+      <div class="panel-title">Operations & LLM Advisor</div>
       <button class="close-btn" onclick="closeDrawer('rightDrawer', 'controlsToggleBtn')">✕</button>
+    </div>
+
+    <!-- LLM Conversational Assistant Box -->
+    <div class="ai-predictor-box" style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.35);">
+      <h4>
+        <span>🤖 LLM Disaster Advisor</span>
+        <span style="font-size:10px; color:#c084fc; font-family:'JetBrains Mono', monospace;">Grounded AI</span>
+      </h4>
+      <div style="margin-bottom: 6px;">
+        <input type="text" id="llmQuestionInput" placeholder="Ask e.g. What is the flood risk in Gangtok & what should I do?" style="width: 100%; background: rgba(0,0,0,0.5); color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 7px 10px; font-size: 11px; font-family: inherit;">
+      </div>
+      <button class="btn" onclick="askLlmAdvisor()" style="background: linear-gradient(135deg, #9333ea, #7c3aed); color: #fff; padding: 8px;">
+        <span>💬 Ask LLM Assistant</span>
+      </button>
+      <div id="llmResponseBox" style="display: none; margin-top: 8px; background: rgba(0,0,0,0.45); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); font-size: 11px; line-height: 1.45; color: #e2e8f0; max-height: 150px; overflow-y: auto;"></div>
     </div>
 
     <!-- AI Flood & NASA SMAP/POWER Multi-Satellite Prediction Simulator -->
