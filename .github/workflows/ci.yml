@@ -13,20 +13,15 @@ on:
 permissions:
   contents: read
 
-env:
-  IMAGE_NAME: ner-sentinel-backend
-  CONTAINER_NAME: ner-sentinel-backend
-  BACKEND_PORT: 8080
-
 jobs:
 
-  backend-ci:
-    name: Backend Build and Test
+  mobile-ci:
+    name: Mobile Build and Test
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: mobile
 
     steps:
       - name: Checkout repository
@@ -37,60 +32,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          cache: maven
 
-      - name: Build backend
-        run: mvn clean verify
+      - name: Make Gradle executable
+        run: chmod +x gradlew
 
-
-  docker-build-push:
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    needs: backend-ci
-
-    if: github.event_name == 'push'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ner-sentinel-backend:latest
-            ${{ secrets.DOCKER_USERNAME }}/ner-sentinel-backend:${{ github.sha }}
-
-
-  deploy:
-    name: Deploy Backend Container
-    runs-on: self-hosted
-    needs: docker-build-push
-
-    steps:
-      - name: Pull latest backend image
-        run: docker pull ${{ secrets.DOCKER_USERNAME }}/ner-sentinel-backend:latest
-
-      - name: Stop existing container
-        run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
-
-      - name: Run latest backend container
-        run: |
-          docker run -d \
-            --name ${{ env.CONTAINER_NAME }} \
-            -p ${{ env.BACKEND_PORT }}:${{ env.BACKEND_PORT }} \
-            --restart unless-stopped \
-            ${{ secrets.DOCKER_USERNAME }}/ner-sentinel-backend:latest
+      - name: Build Android app
+        run: ./gradlew build
