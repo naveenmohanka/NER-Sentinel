@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+.nasa_power_cache/
+.env
