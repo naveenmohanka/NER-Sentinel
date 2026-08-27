@@ -1,0 +1,7 @@
+date,state,station,latitude,longitude,rainfall_mm,soil_moisture,elevation_m,slope_deg,aspect_deg,nasa_precip_mm,nasa_temp_2m_c,nasa_relative_humidity_pct,nasa_wind_speed_2m_ms,nasa_dew_point_2m_c,nasa_surface_pressure_kpa
+2025-01-02,Sikkim,Ranipool,27.2789,88.5944,54.0,0.28,766.0,6.26,158.1,12.4,16.8,84.5,2.1,14.1,92.6
+2025-01-02,Sikkim,Bhusuk,27.3335,88.6472,35.0,0.16,1357.0,13.91,159.6,8.2,12.4,88.2,3.4,10.5,86.4
+2025-01-02,Sikkim,Passi,27.1354,88.4501,80.0,0.32,714.0,36.07,266.2,45.6,17.5,92.0,2.8,16.2,93.1
+2025-01-02,Sikkim,Singtam,27.2317,88.4992,45.0,0.38,355.0,4.23,67.3,18.2,20.1,78.4,1.9,16.3,97.2
+2025-01-02,Sikkim,Majitar,27.1072,88.3222,25.0,0.29,286.0,23.75,68.3,14.5,21.2,76.5,1.8,16.8,98.0
+2025-01-02,Assam,AP Ghat,24.8319,92.7961,54.0,0.28,29.0,2.31,84.2,22.0,22.5,82.0,1.5,19.1,100.8
