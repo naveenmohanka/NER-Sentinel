@@ -1,10 +1,12 @@
-package com.example.nersentinel.controllers;
+package com.example.nersentinel.controller;
 
 import com.example.nersentinel.models.ReportRequest;
 import com.example.nersentinel.models.Zone;
 import com.example.nersentinel.services.RiskEngineService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +24,22 @@ public class ApiController {
     @PostMapping("/reports")
     public ResponseEntity<Map<String, Object>> createReport(@RequestBody ReportRequest request) {
         return ResponseEntity.ok(riskService.processReport(request));
+    }
+
+    @PostMapping(value = "/reports/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> uploadReport(
+            @RequestParam("device_id") String deviceId,
+            @RequestParam("lat") double lat,
+            @RequestParam("lng") double lng,
+            @RequestParam("report_type") String reportType,
+            @RequestParam(value = "timestamp", required = false) Long timestamp,
+            @RequestParam(value = "offline_synced", defaultValue = "false") boolean offlineSynced,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+
+        Map<String, Object> result = riskService.processMultipartReport(
+                deviceId, lat, lng, reportType, timestamp, offlineSynced, image
+        );
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/reports")
