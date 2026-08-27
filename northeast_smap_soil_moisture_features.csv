@@ -1,0 +1,13 @@
+station,state,latitude,longitude,soil_moisture,elevation_m,slope_deg,aspect_deg,smap_quality_flag
+Ranipool,Sikkim,27.2789,88.5944,0.2761,766.0,6.26,158.1,8
+Bhusuk,Sikkim,27.3335,88.6472,0.1661,1357.0,13.91,159.6,9
+Passi,Sikkim,27.1354,88.4501,0.3249,714.0,36.07,266.2,9
+Singtam,Sikkim,27.2317,88.4992,0.3864,355.0,4.23,67.3,8
+Majitar,Sikkim,27.1072,88.3222,0.2860,286.0,23.75,68.3,9
+Melli,Sikkim,27.0853,88.4517,0.3520,221.0,11.01,322.7,9
+Rongli Dam,Sikkim,27.2000,88.7100,0.2410,991.0,27.92,182.9,8
+Dickchu,Sikkim,27.4214,88.5142,0.2105,593.0,18.39,270.7,9
+AP Ghat,Assam,24.8319,92.7961,0.2761,29.0,2.31,84.2,8
+Dharamtul,Assam,26.1683,92.3586,0.4439,64.0,4.32,13.8,8
+Kampur,Assam,26.1528,92.6533,0.3864,60.0,1.39,227.9,8
+Khliehriat,Meghalaya,25.3572,92.3700,0.1140,1160.0,3.25,300.1,9
