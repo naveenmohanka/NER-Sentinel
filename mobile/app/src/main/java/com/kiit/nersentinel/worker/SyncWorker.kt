@@ -5,8 +5,13 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.kiit.nersentinel.data.local.DatabaseProvider
 import com.kiit.nersentinel.data.repository.IncidentRepository
+import com.kiit.nersentinel.model.IncidentReport
 import com.kiit.nersentinel.network.ApiClient
+import com.kiit.nersentinel.network.MultipartUtils
 import com.kiit.nersentinel.network.ReportRequest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class SyncWorker(
     context: Context,
@@ -28,30 +33,86 @@ class SyncWorker(
 
             unsyncedReports.forEach { report ->
 
-                val request = ReportRequest(
-                    deviceId = report.deviceId,
-                    lat = report.lat,
-                    lng = report.lng,
-                    reportType = report.reportType,
-                    timestamp = report.timestamp,
-                    offlineSynced = report.offlineSynced
-                )
-
                 val response =
-                    ApiClient.apiService.submitReport(request)
+                    if (report.imageUri != null) {
+
+                        // Image attached → multipart upload
+                        val reportData =
+                            createMultipartReportData(report)
+
+                        val imagePart =
+                            MultipartUtils.createImagePart(
+                                applicationContext,
+                                report.imageUri
+                            )
+
+                        ApiClient.apiService.submitReportWithImage(
+                            reportData = reportData,
+                            image = imagePart
+                        )
+
+                    } else {
+
+                        // No image → existing JSON upload
+                        val request = ReportRequest(
+                            deviceId = report.deviceId,
+                            lat = report.lat,
+                            lng = report.lng,
+                            reportType = report.reportType,
+                            timestamp = report.timestamp,
+                            offlineSynced = report.offlineSynced
+                        )
+
+                        ApiClient.apiService.submitReport(request)
+                    }
 
                 if (response.isSuccessful) {
+
                     repository.markIncidentAsSynced(report.id)
+
                 } else {
+
                     return Result.retry()
                 }
             }
 
             Result.success()
 
-        } catch (exception: Exception) {
+        } catch (_: Exception) {
 
             Result.retry()
         }
+    }
+
+    private fun createMultipartReportData(
+        report: IncidentReport
+    ): Map<String, RequestBody> {
+
+        val mediaType =
+            "text/plain".toMediaTypeOrNull()
+
+        return mapOf(
+            "device_id" to report.deviceId
+                .toRequestBody(mediaType),
+
+            "lat" to report.lat
+                .toString()
+                .toRequestBody(mediaType),
+
+            "lng" to report.lng
+                .toString()
+                .toRequestBody(mediaType),
+
+            "report_type" to report.reportType
+                .toRequestBody(mediaType),
+
+            "timestamp" to report.timestamp
+                .toString()
+                .toRequestBody(mediaType),
+
+            "offline_synced" to report.offlineSynced
+                .toString()
+                .toRequestBody(mediaType)
+        )
     }
 }
