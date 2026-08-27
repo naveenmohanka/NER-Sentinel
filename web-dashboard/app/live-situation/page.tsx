@@ -31,12 +31,12 @@ export interface ResponderTeam {
 const mockIncidents: Incident[] = [
   {
     id: "inc-1",
-    title: "Kalyanpur Flood",
-    location: "Kalyanpur",
+    title: "Ranipool Flash Inundation",
+    location: "Ranipool River Basin",
     severity: "CRITICAL",
     roadStatus: "BLOCKED",
     type: "Incident",
-    description: "Water level rising rapidly. Evacuation recommended.",
+    description: "Teesta feeder river level rising rapidly. Safe evacuation corridor active.",
     updated: "Updated 2 min ago",
     icon: "flood",
     link: "/risk-assessment",
@@ -44,36 +44,36 @@ const mockIncidents: Incident[] = [
   },
   {
     id: "inc-2",
-    title: "NH-27 Road Blockage",
-    location: "Sector 7",
+    title: "NH-10 Himalayan Debris Slide",
+    location: "29th Mile / Coronation Cut",
     severity: "HIGH",
     roadStatus: "BLOCKED",
     type: "Damage",
-    description: "Bridge access blocked by debris. Traffic rerouting.",
+    description: "Hill slope failure along NH-10. Traffic rerouted via alternate NH-717A corridor.",
     updated: "Updated 5 min ago",
     icon: "traffic",
     mapCoords: { top: "55%", left: "35%" },
   },
   {
     id: "inc-3",
-    title: "New Kanpur City Drainage Surge",
-    location: "New Kanpur City",
+    title: "Singtam Teesta Basin Surge",
+    location: "Singtam Valley",
     severity: "HIGH",
     roadStatus: "SUBMERGED",
     type: "Weather Alert",
-    description: "Rainwater overflow along main commercial route.",
+    description: "Glacial & monsoon runoff surge along Teesta riverbed banks.",
     updated: "Updated 12 min ago",
     icon: "water_drop",
     mapCoords: { top: "30%", left: "60%" },
   },
   {
     id: "inc-4",
-    title: "Devipur Power Substation At-Risk",
-    location: "Devipur",
+    title: "Rangpo Hydel Substation Watch",
+    location: "Rangpo Border",
     severity: "MODERATE",
     roadStatus: "CLEAR",
     type: "Damage",
-    description: "Preventative sandbagging and backup power active.",
+    description: "Preventative sandbagging and backup hydro-telemetry active.",
     updated: "Updated 25 min ago",
     icon: "bolt",
   },
@@ -82,16 +82,16 @@ const mockIncidents: Incident[] = [
 const mockTeams: ResponderTeam[] = [
   {
     id: "team-1",
-    name: "Team Alpha",
-    code: "TA",
-    location: "Kalyanpur",
+    name: "SDRF Sikkim Alpha",
+    code: "SA",
+    location: "Ranipool Sector",
     status: "EN ROUTE",
   },
   {
     id: "team-2",
-    name: "Team Bravo",
-    code: "TB",
-    location: "Devipur",
+    name: "NDRF 1st Bn (Patgaon)",
+    code: "NB",
+    location: "Singtam Valley",
     status: "ON SITE",
   },
 ];
@@ -349,7 +349,7 @@ export default function LiveSituationPage() {
                     </div>
                   </Link>
 
-                  {/* High Risk Marker (New Kanpur City area) */}
+                  {/* High Risk Marker (Singtam Valley Basin area) */}
                   <div className="absolute top-[30%] left-[60%] flex flex-col items-center group cursor-pointer z-10 pointer-events-none select-none">
                     <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-white shadow flex items-center justify-center text-white">
                       <span className="material-symbols-outlined text-[12px]">

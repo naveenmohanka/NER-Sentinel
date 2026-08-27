@@ -1,0 +1,6 @@
+web-dashboard/node_modules/
+web-dashboard/.next/
+web-dashboard/out/
+web-dashboard/build/
+.DS_Store
+*.log

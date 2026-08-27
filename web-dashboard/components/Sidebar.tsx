@@ -13,10 +13,10 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: "dashboard", href: "/" },
   { label: "Live Situation", icon: "public", href: "/live-situation" },
   { label: "Risk Assessment", icon: "monitoring", href: "/risk-assessment" },
-  { label: "Report Hazard", icon: "report_problem", href: "#" },
-  { label: "Response Coordination", icon: "groups", href: "#" },
-  { label: "Alerts & Status", icon: "notifications_active", href: "#" },
-  { label: "Settings", icon: "settings", href: "#" },
+  { label: "Report Hazard", icon: "report_problem", href: "/report-hazard" },
+  { label: "Response Coordination", icon: "groups", href: "/response-coordination" },
+  { label: "Alerts & Status", icon: "notifications_active", href: "/alerts-status" },
+  { label: "Settings", icon: "settings", href: "/settings" },
 ];
 
 export default function Sidebar() {
@@ -89,7 +89,7 @@ export default function Sidebar() {
               <span className="material-symbols-outlined text-sm text-[#7c839b]">
                 mail
               </span>
-              <span className="truncate">fmiscbihar@gmail.com</span>
+              <span className="truncate">ddma.gangtok@sikkim.gov.in</span>
             </div>
           </div>
         </div>
