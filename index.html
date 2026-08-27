@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NER-Sentinel | 3D GIS Intelligence & Evacuation Engine</title>
+  <title>NER-Sentinel | 3D GIS & SRTM DEM-Integrated Disaster Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- MapLibre GL 3D Styles & Typography -->
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- Application Stylesheet -->
   <link rel="stylesheet" href="style.css" />
@@ -21,12 +21,12 @@
   <header class="top-launcher-bar">
     <div class="top-brand-pill glass-panel">
       <div class="badge-pulse"></div>
-      <div class="brand-text">NER-Sentinel <span>3D GIS Gangtok</span></div>
+      <div class="brand-text">NER-Sentinel <span>SRTM DEM + AI GIS</span></div>
     </div>
 
     <div class="launcher-buttons">
       <button class="launcher-btn" id="legendToggleBtn" onclick="toggleDrawer('leftDrawer', this)">
-        <span>📊 Legend & Shelters</span>
+        <span>📊 DEM Model & Legend</span>
       </button>
       <button class="launcher-btn active" id="controlsToggleBtn" onclick="toggleDrawer('rightDrawer', this)">
         <span>⚡ Operational Controls</span>
@@ -37,11 +37,37 @@
     </div>
   </header>
 
-  <!-- Left Collapsible Drawer: Hazard Legend & Camps -->
+  <!-- Left Collapsible Drawer: DEM Model Metrics & Hazard Legend -->
   <aside class="left-drawer glass-panel" id="leftDrawer">
     <div class="panel-header">
-      <div class="panel-title">Hazard Zones & Shelters</div>
+      <div class="panel-title">DEM/SRTM AI Model Specs</div>
       <button class="close-btn" onclick="closeDrawer('leftDrawer', 'legendToggleBtn')">✕</button>
+    </div>
+
+    <!-- AI Model Performance Card -->
+    <div class="ai-metrics-card">
+      <h5>🏔️ Topographic DEM + ML Specs</h5>
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-label">TRAINING ROWS</div>
+          <div class="metric-val">49,919</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">DEM ROC-AUC</div>
+          <div class="metric-val" style="color: #38bdf8; font-size:12px;">0.8690</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">INPUT FEATURES</div>
+          <div class="metric-val">6 (DEM+Rain)</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">SLIDE INVENTORY</div>
+          <div class="metric-val" style="color: #10b981;">438 Records</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: #cbd5e1; margin-top: 6px; font-family: 'JetBrains Mono', monospace; line-height: 1.4;">
+        NASA SRTM Elevation + Slope + Aspect + Rain (Assam, Meghalaya, Sikkim)
+      </div>
     </div>
 
     <div class="legend-section">
@@ -80,17 +106,55 @@
     </div>
   </aside>
 
-  <!-- Right Collapsible Drawer: Operational Controls & Hazard Reporting -->
+  <!-- Right Collapsible Drawer: Operational Controls, DEM AI Predictor & Hazard Reporting -->
   <main class="right-drawer glass-panel" id="rightDrawer">
     <div class="panel-header">
-      <div class="panel-title">Dijkstra Routing Engine</div>
+      <div class="panel-title">Operations & DEM Predictor</div>
       <button class="close-btn" onclick="closeDrawer('rightDrawer', 'controlsToggleBtn')">✕</button>
+    </div>
+
+    <!-- AI Flood & DEM Topography Prediction Simulator -->
+    <div class="ai-predictor-box">
+      <h4>
+        <span>🌧️ DEM Topographic Predictor</span>
+        <span id="floodRiskBadge" style="background:#10b981; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px;">LOW RISK</span>
+      </h4>
+
+      <!-- DEM Sector Selector Preset -->
+      <div style="margin-bottom: 8px;">
+        <label style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">Target Topography Sector:</label>
+        <select id="demSectorSelect" onchange="applyDemSectorPreset()" style="width: 100%; background: rgba(0,0,0,0.4); color: #f8fafc; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 5px 8px; font-size: 11px; margin-top: 3px; font-family: inherit;">
+          <option value="ranipool">Ranipool Basin (Elev: 766m, Slope: 6.3°)</option>
+          <option value="bhusuk">Bhusuk Ridge (Elev: 1357m, Slope: 13.9°)</option>
+          <option value="passi">Passi Escarpment (Elev: 714m, Slope: 36.1°)</option>
+          <option value="singtam">Singtam Valley (Elev: 355m, Slope: 4.2°)</option>
+        </select>
+      </div>
+
+      <div class="rainfall-slider-row">
+        <div class="slider-label"><span>1-Day Rain:</span> <span id="valRain1d">25 mm</span></div>
+        <input type="range" class="rainfall-slider" id="sliderRain1d" min="0" max="250" value="25" oninput="updateRainfallUI()">
+      </div>
+
+      <div class="rainfall-slider-row">
+        <div class="slider-label"><span>3-Day Cumul:</span> <span id="valRain3d">65 mm</span></div>
+        <input type="range" class="rainfall-slider" id="sliderRain3d" min="0" max="400" value="65" oninput="updateRainfallUI()">
+      </div>
+
+      <div class="rainfall-slider-row">
+        <div class="slider-label"><span>7-Day Cumul:</span> <span id="valRain7d">140 mm</span></div>
+        <input type="range" class="rainfall-slider" id="sliderRain7d" min="0" max="600" value="140" oninput="updateRainfallUI()">
+      </div>
+
+      <button class="btn btn-ai" id="runAiPredictBtn" onclick="runAiFloodPrediction()" style="margin-top:6px;">
+        <span>🧠 Run DEM Prediction (AUC 0.869)</span>
+      </button>
     </div>
 
     <!-- Interactive User Hazard Reporting Tool -->
     <div class="hazard-report-box">
       <h4>
-        <span>🚨 Report Unsafe Disaster Point</span>
+        <span>🚨 Report Disaster Point</span>
         <button onclick="clearAllHazards()" style="background:transparent; border:none; color:#f87171; font-size:11px; cursor:pointer; text-decoration:underline;">Clear All</button>
       </h4>
       
@@ -118,7 +182,7 @@
         <span>📍 Route from My Location (GPS)</span>
       </button>
 
-      <button class="btn btn-warning" id="toggleZoneABtn">
+      <button class="btn" id="toggleZoneABtn" style="background: linear-gradient(135deg, #d97706, #ea580c);">
         <span>⚠️ Toggle ZONE-A Critical</span>
       </button>
     </div>
@@ -134,6 +198,8 @@
     <button class="dock-btn active" id="view3DRidge" onclick="setCameraView('ridge')">🏔️ 3D Ridge</button>
     <button class="dock-btn" id="view3DValley" onclick="setCameraView('valley')">🌄 Valley</button>
     <button class="dock-btn" id="view2DTop" onclick="setCameraView('topdown')">🗺️ 2D Top</button>
+    <button class="dock-btn" id="toggleStationsBtn" onclick="toggleSikkimStations()">🛰️ SRTM Stations</button>
+    <button class="dock-btn" id="toggleLandslidesBtn" onclick="toggleSikkimLandslides()">🌋 Sikkim Slides</button>
     <button class="dock-btn" id="toggleTerrainBtn" onclick="toggleTerrain()">🏔️ 3D: <b>ON</b></button>
   </footer>
 

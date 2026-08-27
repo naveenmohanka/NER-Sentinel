@@ -1,12 +1,13 @@
 :root {
-  --bg-glass: rgba(15, 23, 42, 0.88);
-  --bg-card: rgba(30, 41, 59, 0.75);
+  --bg-glass: rgba(15, 23, 42, 0.90);
+  --bg-card: rgba(30, 41, 59, 0.78);
   --border-glass: rgba(255, 255, 255, 0.16);
   --accent-cyan: #38bdf8;
   --accent-emerald: #10b981;
   --accent-red: #ef4444;
   --accent-orange: #f97316;
   --accent-yellow: #eab308;
+  --accent-purple: #a855f7;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
@@ -167,13 +168,13 @@ html, body {
   color: #fff;
 }
 
-/* Left Drawer: Legend & Shelters */
+/* Left Drawer: Legend, AI Model Metrics & Shelters */
 .left-drawer {
   position: absolute;
   top: 70px;
   left: 16px;
   z-index: 110;
-  width: 280px;
+  width: 295px;
   padding: 16px 18px;
   font-size: 12px;
   max-height: calc(100vh - 140px);
@@ -181,10 +182,56 @@ html, body {
 }
 
 .left-drawer.collapsed {
-  transform: translateX(-320px);
+  transform: translateX(-330px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+/* AI Model Performance Card */
+.ai-metrics-card {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.ai-metrics-card h5 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c084fc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.metric-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.metric-label {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.metric-val {
+  color: #e2e8f0;
+  font-weight: 700;
 }
 
 .legend-section {
@@ -229,23 +276,61 @@ html, body {
   margin: 12px 0;
 }
 
-/* Right Drawer: Operational Controls & Hazard Reporting */
+/* Right Drawer: Operations & AI Rainfall Predictor */
 .right-drawer {
   position: absolute;
   top: 70px;
   right: 16px;
   z-index: 110;
-  width: 325px;
+  width: 335px;
   padding: 16px 18px;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
 }
 
 .right-drawer.collapsed {
-  transform: translateX(360px);
+  transform: translateX(370px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+/* AI Flood Prediction Box */
+.ai-predictor-box {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.ai-predictor-box h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rainfall-slider-row {
+  margin-bottom: 8px;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-bottom: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rainfall-slider {
+  width: 100%;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
 }
 
 /* Interactive Hazard Reporting Section */
@@ -366,20 +451,20 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0369a1, #1d4ed8);
-  box-shadow: 0 0 16px rgba(37, 99, 235, 0.5);
-}
-
 .btn-gps {
   background: linear-gradient(135deg, #059669, #10b981);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
 }
 
-.btn-gps:hover:not(:disabled) {
-  background: linear-gradient(135deg, #047857, #059669);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+.btn-ai {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.btn-ai:hover:not(:disabled) {
+  box-shadow: 0 0 16px rgba(147, 51, 234, 0.55);
 }
 
 /* Status Console Box */
