@@ -11,7 +11,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: "dashboard", href: "/" },
-  { label: "Live Situation", icon: "public", href: "#" },
+  { label: "Live Situation", icon: "public", href: "/live-situation" },
   { label: "Risk Assessment", icon: "monitoring", href: "/risk-assessment" },
   { label: "Report Hazard", icon: "report_problem", href: "#" },
   { label: "Response Coordination", icon: "groups", href: "#" },
