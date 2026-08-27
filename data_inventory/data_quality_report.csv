@@ -1,0 +1,8 @@
+dataset_id,dataset_name,total_records,missing_values_pct,duplicate_rows_pct,spatial_resolution,retrieval_quality_score,validation_check
+DS-01,Precipitation Observations (IMD/CWC),54138,0.0%,0.0%,Station Point / 0.25 deg grid,98.5%,PASS - Strict chronological monotonicity verified
+DS-02,Flood Occurrence Labels (CWC),54138,0.0%,0.0%,Regional River Basin,99.0%,PASS - Positive flood days (5138) verified against IMD rainfall peaks
+DS-03,NASA SRTM 30m Topography DEM,Raster Grid,0.0%,0.0%,30m (1 arc-second),99.8%,PASS - No void pixels in Gangtok and East Sikkim bounding boxes
+DS-04,NASA SMAP L3 Soil Moisture Radiometer,49919,0.0% (interpolated),0.0%,9km EASE-Grid 2.0,94.2%,PASS - Retrieval quality flags (8/9) filtered for high confidence
+DS-05,Sikkim Landslide Geological Inventory,438,0.0%,0.0%,Field Survey GPS Polygons,96.5%,PASS - 9 classes categorized with slope (6°-58°) and elevation (221m-4130m)
+DS-06,NASA POWER Daily Meteorology,Continuous API,0.0%,0.0%,0.5 x 0.5 deg grid,99.2%,PASS - Hourly solar & meteorological time series cached locally
+DS-07,Merged Multi-Satellite Master Matrix,49919,0.0%,0.0%,Station & Grid Fusion,98.2%,PASS - All 15 columns normalized and validated for ML inference

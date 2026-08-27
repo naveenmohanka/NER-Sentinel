@@ -1,0 +1,8 @@
+dataset_name,data_type,file_format,source_authority,spatial_coverage,temporal_range,records_rows,features_columns,data_role,status
+Precipitation Observations,Hydrometeorology,CSV / NetCDF,IMD / CWC,"Assam, Meghalaya, Sikkim",2001-2026,54138,8,Flood & Runoff Triggering Engine,Available / Usable
+Historical Flood Inundation,Disaster Occurrence,CSV / GeoTIFF,National Flood Commission (CWC),"Assam, Meghalaya, Sikkim",2001-2026,5138 Positive Events,5,Supervised ML Classification Labels,Available / Usable
+NASA SRTM DEM (30m),Topography & Geomorphology,GeoTIFF / HGT (30m),NASA JPL / USGS,Himalayan Range (Northeast),Static (Year 2000 Baseline),1 arc-second grid,Elevation / Slope / Aspect,Runoff Velocity & Terrain Routing,Available / Usable
+NASA SMAP Soil Moisture,Satellite Radiometry,HDF5 (.h5) / CSV (9km/36km),NASA JPL / GSFC,"Assam, Meghalaya, Sikkim",2015-2026,49919 Collocated Samples,14,Pore Pressure & Saturation Modeling,Available / Usable
+Geological Landslide Inventory,Geotechnical Field Survey,CSV / Shapefile,Geological Survey of India (GSI),Gangtok Basin & East Sikkim,Historical Field Events,438 Instances,9,Slope Stability & Detour Avoidance,Available / Usable
+NASA POWER Daily Weather,Atmospheric Meteorology,REST API (JSON/CSV),NASA Langley Research Center (LaRC),Global (0.5x0.5 deg grid),1981-Present (Live Daily),Time-Series on Demand,6,Atmospheric Humidity & Barometric Storm Forcing,Integrated Pipeline / Active
+Merged Multi-Satellite Master,Ensemble Master Matrix,CSV (Master),NER-Sentinel Data Fusion Engine,"Assam, Meghalaya, Sikkim",2001-2026,49919 Clean Rows,15,Multi-Factor ML Model Training & Validation,Available / Complete

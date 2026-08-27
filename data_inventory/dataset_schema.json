@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NER-Sentinel Multi-Satellite Disaster Intelligence Dataset Schema",
+  "version": "2.0.0",
+  "datasets": {
+    "precipitation_features": {
+      "description": "Multi-day cumulative precipitation derived from station telemetry and satellite observations",
+      "fields": {
+        "rain_1d": { "type": "float", "unit": "mm", "range": [0.0, 500.0], "role": "24-hour flash trigger" },
+        "rain_3d": { "type": "float", "unit": "mm", "range": [0.0, 1000.0], "role": "Short-term accumulation" },
+        "rain_7d": { "type": "float", "unit": "mm", "range": [0.0, 2000.0], "role": "Sub-surface saturation baseline" },
+        "rain_14d": { "type": "float", "unit": "mm", "range": [0.0, 3500.0], "role": "Catchment regional baseline" }
+      }
+    },
+    "srtm_dem_topography": {
+      "description": "NASA SRTM 30m Digital Elevation Model geomorphological variables",
+      "fields": {
+        "elevation_m": { "type": "float", "unit": "meters", "range": [0.0, 8848.0], "role": "Hydrostatic head and valley accumulation" },
+        "slope_deg": { "type": "float", "unit": "degrees", "range": [0.0, 90.0], "role": "Shear stress and hydraulic runoff velocity" },
+        "aspect_deg": { "type": "float", "unit": "degrees", "range": [0.0, 360.0], "role": "Monsoon windward/leeward exposure" }
+      }
+    },
+    "smap_soil_moisture": {
+      "description": "NASA SMAP L-band microwave radiometer ground saturation observations",
+      "fields": {
+        "soil_moisture": { "type": "float", "unit": "m3/m3", "range": [0.0, 1.0], "role": "Pore water pressure and shear strength depletion" },
+        "retrieval_qual_flag": { "type": "integer", "role": "Data confidence filter (flag 8/9 recommended)" }
+      }
+    },
+    "landslide_geology": {
+      "description": "Geological Survey of India field inventory attributes for Sikkim",
+      "fields": {
+        "Name": { "type": "string", "enum": ["Debris slide", "Translational slide", "Rock slide", "Debris slide-flow", "Shallow translational slide"] },
+        "Geology": { "type": "string", "enum": ["LHS Daling", "MCT zone", "GHS paro"] },
+        "Area": { "type": "float", "unit": "m2", "role": "Debris hazard volume footprint" }
+      }
+    },
+    "nasa_power_weather": {
+      "description": "NASA Langley Research Center daily meteorological parameters",
+      "fields": {
+        "nasa_precip_mm": { "type": "float", "unit": "mm", "role": "Satellite corrected precipitation" },
+        "nasa_temp_2m_c": { "type": "float", "unit": "celsius", "role": "Thermal energy balance" },
+        "nasa_relative_humidity_pct": { "type": "float", "unit": "%", "range": [0.0, 100.0], "role": "Convective storm moisture availability" },
+        "nasa_wind_speed_2m_ms": { "type": "float", "unit": "m/s", "role": "Atmospheric advection" },
+        "nasa_surface_pressure_kpa": { "type": "float", "unit": "kPa", "role": "Barometric depression tracking" }
+      }
+    }
+  }
+}
