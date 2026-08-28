@@ -63,6 +63,7 @@ export default function Live2DStreetIncidentMap() {
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const [mapStyle, setMapStyle] = useState<"google_streets" | "google_hybrid" | "google_terrain">("google_streets");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIncident, setSelectedIncident] = useState<IncidentMarker | null>(null);
 
@@ -76,34 +77,79 @@ export default function Live2DStreetIncidentMap() {
         const mlgl = await import("maplibre-gl");
         maplibre = mlgl.default || mlgl;
 
-        // Clean, High-Detail 2D Street Map (100% Free, Zero API Key Required)
+        // Direct Google Maps Live Tiles Integration (Google Streets / Hybrid / Terrain)
         const map = new maplibre.Map({
           container: mapContainerRef.current,
           style: {
             version: 8,
             sources: {
-              "esri-streets": {
+              // 1. Google Live Streets (Google Standard Map)
+              "google-streets": {
                 type: "raster",
                 tiles: [
-                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+                  "https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+                  "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+                  "https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+                  "https://mt3.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                 ],
                 tileSize: 256,
-                attribution: "Esri, DeLorme, NAVTEQ, USGS"
+                attribution: "Google Maps"
+              },
+              // 2. Google Live Hybrid (Satellite + Google Road Network)
+              "google-hybrid": {
+                type: "raster",
+                tiles: [
+                  "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                  "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                  "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                  "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+                ],
+                tileSize: 256,
+                attribution: "Google Maps"
+              },
+              // 3. Google Live Physical Terrain
+              "google-terrain": {
+                type: "raster",
+                tiles: [
+                  "https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+                  "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+                  "https://mt2.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+                  "https://mt3.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
+                ],
+                tileSize: 256,
+                attribution: "Google Maps"
               }
             },
             layers: [
               {
-                id: "esri-streets-layer",
+                id: "google-streets-layer",
                 type: "raster",
-                source: "esri-streets",
+                source: "google-streets",
                 minzoom: 0,
-                maxzoom: 20
+                maxzoom: 21,
+                layout: { visibility: "visible" }
+              },
+              {
+                id: "google-hybrid-layer",
+                type: "raster",
+                source: "google-hybrid",
+                minzoom: 0,
+                maxzoom: 21,
+                layout: { visibility: "none" }
+              },
+              {
+                id: "google-terrain-layer",
+                type: "raster",
+                source: "google-terrain",
+                minzoom: 0,
+                maxzoom: 21,
+                layout: { visibility: "none" }
               }
             ]
           },
           center: [88.6065, 27.3000],
-          zoom: 12.8,
-          maxZoom: 19,
+          zoom: 13.0,
+          maxZoom: 20,
           antialias: true
         });
 
@@ -133,7 +179,7 @@ export default function Live2DStreetIncidentMap() {
                 border-radius: 50%;
                 background: ${isCritical ? "#ba1a1a" : isHigh ? "#ea580c" : "#eab308"};
                 border: 2.5px solid white;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.35);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -160,7 +206,7 @@ export default function Live2DStreetIncidentMap() {
 
             el.addEventListener("click", () => {
               setSelectedIncident(inc);
-              map.flyTo({ center: [inc.lng, inc.lat], zoom: 15.5, duration: 1200 });
+              map.flyTo({ center: [inc.lng, inc.lat], zoom: 16.0, duration: 1200 });
               if (inc.link) {
                 setTimeout(() => router.push(inc.link!), 1500);
               }
@@ -193,6 +239,16 @@ export default function Live2DStreetIncidentMap() {
     };
   }, [router]);
 
+  const switchGoogleLayer = (style: "google_streets" | "google_hybrid" | "google_terrain") => {
+    setMapStyle(style);
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    map.setLayoutProperty("google-streets-layer", "visibility", style === "google_streets" ? "visible" : "none");
+    map.setLayoutProperty("google-hybrid-layer", "visibility", style === "google_hybrid" ? "visible" : "none");
+    map.setLayoutProperty("google-terrain-layer", "visibility", style === "google_terrain" ? "visible" : "none");
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const map = mapInstanceRef.current;
@@ -200,30 +256,55 @@ export default function Live2DStreetIncidentMap() {
 
     const q = searchQuery.toLowerCase().trim();
     if (q.includes("ranipool")) {
-      map.flyTo({ center: [88.5944, 27.2789], zoom: 16, duration: 1500 });
+      map.flyTo({ center: [88.5944, 27.2789], zoom: 16.5, duration: 1500 });
     } else if (q.includes("gangtok")) {
-      map.flyTo({ center: [88.6138, 27.3314], zoom: 15.5, duration: 1500 });
+      map.flyTo({ center: [88.6138, 27.3314], zoom: 16.0, duration: 1500 });
     } else if (q.includes("singtam")) {
-      map.flyTo({ center: [88.4992, 27.2317], zoom: 15.5, duration: 1500 });
+      map.flyTo({ center: [88.4992, 27.2317], zoom: 16.0, duration: 1500 });
     } else if (q.includes("bhusuk")) {
-      map.flyTo({ center: [88.6200, 27.3500], zoom: 15.5, duration: 1500 });
+      map.flyTo({ center: [88.6200, 27.3500], zoom: 16.0, duration: 1500 });
     } else if (q.includes("nh-10") || q.includes("nh10")) {
-      map.flyTo({ center: [88.5800, 27.2600], zoom: 15.5, duration: 1500 });
+      map.flyTo({ center: [88.5800, 27.2600], zoom: 16.0, duration: 1500 });
     } else {
-      map.flyTo({ center: [88.6065, 27.3000], zoom: 14, duration: 1200 });
+      map.flyTo({ center: [88.6065, 27.3000], zoom: 14.0, duration: 1200 });
     }
   };
 
   return (
-    <div className="relative w-full h-full min-h-[480px] rounded-2xl overflow-hidden bg-slate-100 border border-[#dcd9db]">
-      {/* 2D Interactive WebGL Map Container */}
+    <div className="relative w-full h-full min-h-[500px] rounded-2xl overflow-hidden bg-slate-100 border border-[#dcd9db]">
+      {/* Google Live Map Container */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
-      {/* Floating Google-Style Search Bar on Top of Map */}
-      <div className="absolute top-4 left-4 right-16 z-20 max-w-md">
+      {/* Floating Google Layer Switcher (Top Left) */}
+      <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-xl p-1 shadow-lg border border-gray-200 text-xs font-semibold">
+        <button
+          type="button"
+          onClick={() => switchGoogleLayer("google_streets")}
+          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_streets" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
+        >
+          📍 Google Streets
+        </button>
+        <button
+          type="button"
+          onClick={() => switchGoogleLayer("google_hybrid")}
+          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_hybrid" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
+        >
+          🛰️ Google Satellite
+        </button>
+        <button
+          type="button"
+          onClick={() => switchGoogleLayer("google_terrain")}
+          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_terrain" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
+        >
+          🏔️ Google Terrain
+        </button>
+      </div>
+
+      {/* Floating Google-Style Search Bar (Top Right) */}
+      <div className="absolute top-16 left-4 z-20 max-w-sm w-full">
         <form
           onSubmit={handleSearchSubmit}
-          className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl p-1.5 shadow-lg border border-gray-200"
+          className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-xl p-1.5 shadow-lg border border-gray-200"
         >
           <span className="material-symbols-outlined text-gray-500 pl-2 text-[20px]">search</span>
           <input
@@ -235,21 +316,21 @@ export default function Live2DStreetIncidentMap() {
           />
           <button
             type="submit"
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
           >
             Locate
           </button>
         </form>
       </div>
 
-      {/* Floating Bottom Left: 2D Street Detail Notice */}
-      <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-3 border border-gray-200 shadow-lg max-w-xs text-xs space-y-1">
+      {/* Floating Bottom Left: Google Maps Status Badge */}
+      <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 border border-gray-200 shadow-lg text-xs space-y-0.5">
         <div className="flex items-center gap-1.5 font-bold text-gray-900">
-          <span className="text-blue-600">🗺️</span>
-          <span>High-Detail 2D Street Network</span>
+          <span className="text-blue-600">🌐</span>
+          <span>Google Maps Live Integration</span>
         </div>
-        <p className="text-[11px] text-gray-600 leading-snug">
-          Zoom in with scroll wheel or <b>+ / -</b> buttons to inspect exact Sikkim street names, bridge crossings, and lane geometry.
+        <p className="text-[10px] text-gray-500 font-mono">
+          Real-time Google vector roads, POIs, and hybrid satellite tiles.
         </p>
       </div>
     </div>
