@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 class ReportViewModel(
@@ -33,104 +34,75 @@ class ReportViewModel(
         onResult: (String) -> Unit
     ) {
         viewModelScope.launch {
-
             try {
-
-                // 1. Always save locally first
-                val incidentId =
-                    repository.saveIncident(report)
+                val incidentId = repository.saveIncident(report)
 
                 val response =
-                    if (report.imageUri != null) {
+                    if (!report.imageUri.isNullOrBlank()) {
+                        val reportData = createMultipartReportData(
+                            report = report,
+                            offlineSynced = false
+                        )
 
-                        // 2A. Image attached → multipart upload
-                        val reportData =
-                            createMultipartReportData(report)
-
-                        val imagePart =
-                            MultipartUtils.createImagePart(
-                                context,
-                                report.imageUri
-                            )
+                        val imagePart = MultipartUtils.createImagePart(
+                            context,
+                            report.imageUri
+                        )
 
                         ApiClient.apiService.submitReportWithImage(
                             reportData = reportData,
                             image = imagePart
                         )
-
                     } else {
-
-                        // 2B. No image → existing JSON API
-                        val request = ReportRequest(
-                            deviceId = report.deviceId,
-                            lat = report.lat,
-                            lng = report.lng,
-                            reportType = report.reportType,
-                            timestamp = report.timestamp,
-                            offlineSynced = report.offlineSynced
+                        ApiClient.apiService.submitReport(
+                            buildReportRequest(
+                                report = report,
+                                offlineSynced = false
+                            )
                         )
-
-                        ApiClient.apiService.submitReport(request)
                     }
 
-                // 3. Mark synced only after backend success
                 if (response.isSuccessful) {
-
                     repository.markIncidentAsSynced(incidentId)
-
-                    onResult(
-                        "Report submitted and synced successfully"
-                    )
-
+                    onResult("Report submitted and synced successfully")
                 } else {
-
                     SyncScheduler.schedule(context)
-
-                    onResult(
-                        "Saved offline. Sync scheduled."
-                    )
+                    onResult("Saved offline. Sync scheduled.")
                 }
-
             } catch (_: Exception) {
-
                 SyncScheduler.schedule(context)
-
-                onResult(
-                    "Saved offline. Will sync automatically."
-                )
+                onResult("Saved offline. Will sync automatically.")
             }
         }
     }
 
-    private fun createMultipartReportData(
-        report: IncidentReport
-    ): Map<String, okhttp3.RequestBody> {
+    private fun buildReportRequest(
+        report: IncidentReport,
+        offlineSynced: Boolean
+    ): ReportRequest {
+        return ReportRequest(
+            deviceId = report.deviceId,
+            lat = report.lat,
+            lng = report.lng,
+            reportType = report.reportType,
+            timestamp = report.timestamp,
+            offlineSynced = offlineSynced
+        )
+    }
 
-        val mediaType =
-            "text/plain".toMediaTypeOrNull()
+    private fun createMultipartReportData(
+        report: IncidentReport,
+        offlineSynced: Boolean
+    ): Map<String, RequestBody> {
+        val mediaType = "text/plain".toMediaTypeOrNull()
 
         return mapOf(
-            "device_id" to report.deviceId
-                .toRequestBody(mediaType),
-
-            "lat" to report.lat
-                .toString()
-                .toRequestBody(mediaType),
-
-            "lng" to report.lng
-                .toString()
-                .toRequestBody(mediaType),
-
-            "report_type" to report.reportType
-                .toRequestBody(mediaType),
-
-            "timestamp" to report.timestamp
-                .toString()
-                .toRequestBody(mediaType),
-
-            "offline_synced" to report.offlineSynced
-                .toString()
-                .toRequestBody(mediaType)
+            "device_id" to report.deviceId.toRequestBody(mediaType),
+            "lat" to report.lat.toString().toRequestBody(mediaType),
+            "lng" to report.lng.toString().toRequestBody(mediaType),
+            "report_type" to report.reportType.toRequestBody(mediaType),
+            "timestamp" to report.timestamp.toString().toRequestBody(mediaType),
+            "offline_synced" to offlineSynced.toString().toRequestBody(mediaType)
         )
     }
 }
