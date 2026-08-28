@@ -76,28 +76,26 @@ export default function Live2DStreetIncidentMap() {
         const mlgl = await import("maplibre-gl");
         maplibre = mlgl.default || mlgl;
 
-        // Clean, High-Detail 2D Street Vector Map (Google-style CartoDB Voyager)
+        // Clean, High-Detail 2D Street Map (100% Free, Zero API Key Required)
         const map = new maplibre.Map({
           container: mapContainerRef.current,
           style: {
             version: 8,
             sources: {
-              "carto-voyager": {
+              "esri-streets": {
                 type: "raster",
                 tiles: [
-                  "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
-                  "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
-                  "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"
+                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
                 ],
                 tileSize: 256,
-                attribution: "OpenStreetMap, CartoDB"
+                attribution: "Esri, DeLorme, NAVTEQ, USGS"
               }
             },
             layers: [
               {
-                id: "voyager-layer",
+                id: "esri-streets-layer",
                 type: "raster",
-                source: "carto-voyager",
+                source: "esri-streets",
                 minzoom: 0,
                 maxzoom: 20
               }
