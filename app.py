@@ -248,6 +248,68 @@ def predict_hazard(payload: PredictionRequest):
     }
 
 
+class BackendReportRequest(BaseModel):
+    report_id: Optional[str] = Field("RPT-12345", example="RPT-12345", description="Unique report identifier")
+    report_type: Optional[str] = Field("LANDSLIDE", example="LANDSLIDE", description="Hazard type (LANDSLIDE / FLOOD / ROAD_BLOCKAGE)")
+    latitude: float = Field(..., example=27.3389, description="Incident Latitude")
+    longitude: float = Field(..., example=88.6065, description="Incident Longitude")
+    image_url: Optional[str] = Field(None, example="https://supabase.co/storage/v1/object/public/reports/image.jpg", description="Uploaded incident photo URL")
+    date: Optional[str] = Field(None, example="2026-08-28", description="Date string (YYYY-MM-DD)")
+
+
+@app.post("/api/v1/analyze")
+def analyze_backend_report(payload: BackendReportRequest):
+    """
+    Direct ingestion endpoint for Spring Boot / Mobile backend reports.
+    Executes NASA multi-satellite telemetry extraction + ML probability scoring.
+    """
+    pred_req = PredictionRequest(
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        date=payload.date
+    )
+    res = predict_hazard(pred_req)
+    
+    # Calculate Landslide Risk Score based on slope + soil moisture + rain
+    elevation = res["nasa_srtm_topography"]["elevation_m"]
+    slope = res["nasa_srtm_topography"]["slope_deg"]
+    moisture = res["nasa_smap_soil_moisture"]["soil_moisture_m3m3"]
+    rain_7d = res["precipitation_metrics"]["rain_7d_mm"]
+    
+    # Slope & pore water saturation formula
+    landslide_score = min(0.95, (slope / 45.0) * 0.45 + (moisture / 0.50) * 0.35 + (min(rain_7d, 250) / 250) * 0.20)
+    landslide_risk_level = "CRITICAL" if landslide_score > 0.75 else "HIGH" if landslide_score > 0.50 else "MEDIUM" if landslide_score > 0.30 else "LOW"
+
+    return {
+        "status": "SUCCESS",
+        "report_id": payload.report_id,
+        "report_type": payload.report_type,
+        "location": {
+            "latitude": payload.latitude,
+            "longitude": payload.longitude,
+            "elevation_m": elevation,
+            "slope_deg": slope,
+        },
+        "prediction": {
+            "flood_probability": res["disaster_assessment"]["probability_flood"],
+            "landslide_probability": round(landslide_score, 4),
+            "flood_risk": res["disaster_assessment"]["risk_level"],
+            "landslide_risk": landslide_risk_level,
+            "overall_severity": "CRITICAL" if (res["disaster_assessment"]["risk_level"] == "CRITICAL" or landslide_risk_level == "CRITICAL") else "HIGH",
+        },
+        "satellite_telemetry": {
+            "smap_soil_moisture_m3m3": moisture,
+            "srtm_slope_deg": slope,
+            "srtm_elevation_m": elevation,
+            "power_rain_24h_mm": res["precipitation_metrics"]["rain_1d_mm"],
+            "power_rain_7d_mm": rain_7d,
+            "relative_humidity_pct": res["nasa_power_meteorology"]["relative_humidity_pct"],
+        },
+        "image_url": payload.image_url,
+        "recommended_action": "DISPATCH_SDRF_UNIT" if landslide_score > 0.70 else "MONITOR_DRAINAGE_LEVELS"
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     print("Starting NER-Sentinel FastAPI Server on http://127.0.0.1:8000 ...")
