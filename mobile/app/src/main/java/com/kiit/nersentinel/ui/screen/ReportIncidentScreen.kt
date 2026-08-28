@@ -1,7 +1,6 @@
 package com.kiit.nersentinel.ui.screen
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
@@ -24,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,12 +40,14 @@ import com.google.android.gms.location.LocationServices
 import com.kiit.nersentinel.data.local.DatabaseProvider
 import com.kiit.nersentinel.data.repository.IncidentRepository
 import com.kiit.nersentinel.model.IncidentReport
+import com.kiit.nersentinel.network.LocalImageStorage
 import com.kiit.nersentinel.ui.components.IncidentOption
 import com.kiit.nersentinel.viewmodel.ReportViewModel
 import com.kiit.nersentinel.viewmodel.ReportViewModelFactory
 
 @Composable
 fun ReportIncidentScreen() {
+
     val context = LocalContext.current
 
     val database = remember {
@@ -86,42 +88,74 @@ fun ReportIncidentScreen() {
         mutableStateOf("Location not fetched")
     }
 
+    LaunchedEffect(Unit) {
+        reportViewModel.syncMessage.collect { message ->
+
+            locationStatus = message
+
+            Log.d(
+                "NER_SENTINEL",
+                message
+            )
+        }
+    }
+
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
     fun fetchLocation() {
+
         locationStatus = "Fetching location..."
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
+
                 if (location != null) {
+
                     latitude = location.latitude
                     longitude = location.longitude
-                    locationStatus = "Location fetched successfully"
+
+                    locationStatus =
+                        "Location fetched successfully"
+
                 } else {
-                    locationStatus = "Unable to fetch location"
+
+                    locationStatus =
+                        "Unable to fetch location"
                 }
             }
             .addOnFailureListener {
-                locationStatus = "Failed to fetch location"
+
+                locationStatus =
+                    "Failed to fetch location"
             }
     }
 
     val locationPermissionLauncher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestMultiplePermissions()
+            contract =
+                ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
+
             val fineGranted =
-                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+                permissions[
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ] == true
 
             val coarseGranted =
-                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                permissions[
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ] == true
 
             if (fineGranted || coarseGranted) {
+
                 fetchLocation()
+
             } else {
-                locationStatus = "Location permission denied"
+
+                locationStatus =
+                    "Location permission denied"
             }
         }
 
@@ -129,17 +163,35 @@ fun ReportIncidentScreen() {
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument()
         ) { uri ->
-            if (uri != null) {
-                try {
-                    context.contentResolver.takePersistableUriPermission(
-                        uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (_: SecurityException) {
-                    // Some providers do not grant persistable permissions.
-                }
 
-                selectedImageUri = uri
+            if (uri != null) {
+
+                try {
+
+                    val localImageUri =
+                        LocalImageStorage.copyToAppStorage(
+                            context = context,
+                            sourceUri = uri
+                        )
+
+                    selectedImageUri = localImageUri
+
+                    Log.d(
+                        "NER_SENTINEL",
+                        "Image copied locally: $localImageUri"
+                    )
+
+                } catch (e: Exception) {
+
+                    Log.e(
+                        "NER_SENTINEL",
+                        "Failed to store image locally",
+                        e
+                    )
+
+                    locationStatus =
+                        "Failed to save selected image"
+                }
             }
         }
 
@@ -149,9 +201,14 @@ fun ReportIncidentScreen() {
             .statusBarsPadding()
             .padding(20.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+
+        verticalArrangement =
+            Arrangement.spacedBy(10.dp)
     ) {
-        Spacer(modifier = Modifier.height(2.dp))
+
+        Spacer(
+            modifier = Modifier.height(2.dp)
+        )
 
         Text(
             text = "Report an Incident",
@@ -159,11 +216,16 @@ fun ReportIncidentScreen() {
         )
 
         Text(
-            text = "Help authorities identify hazards and protect your community.",
-            style = MaterialTheme.typography.bodyMedium
+            text =
+                "Help authorities identify hazards and protect your community.",
+
+            style =
+                MaterialTheme.typography.bodyMedium
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(
+            modifier = Modifier.height(2.dp)
+        )
 
         Text(
             text = "Select Incident Type",
@@ -172,8 +234,12 @@ fun ReportIncidentScreen() {
 
         IncidentOption(
             title = "Crack Spotted",
-            description = "Visible cracks on slopes or roads",
-            selected = selectedIncident == "crack_spotted",
+            description =
+                "Visible cracks on slopes or roads",
+
+            selected =
+                selectedIncident == "crack_spotted",
+
             onClick = {
                 selectedIncident = "crack_spotted"
             }
@@ -181,8 +247,12 @@ fun ReportIncidentScreen() {
 
         IncidentOption(
             title = "Slope Movement",
-            description = "Ground or slope movement observed",
-            selected = selectedIncident == "slope_movement",
+            description =
+                "Ground or slope movement observed",
+
+            selected =
+                selectedIncident == "slope_movement",
+
             onClick = {
                 selectedIncident = "slope_movement"
             }
@@ -190,8 +260,12 @@ fun ReportIncidentScreen() {
 
         IncidentOption(
             title = "Minor Landslide",
-            description = "Small debris or soil movement",
-            selected = selectedIncident == "minor_landslide",
+            description =
+                "Small debris or soil movement",
+
+            selected =
+                selectedIncident == "minor_landslide",
+
             onClick = {
                 selectedIncident = "minor_landslide"
             }
@@ -199,8 +273,12 @@ fun ReportIncidentScreen() {
 
         IncidentOption(
             title = "Major Landslide",
-            description = "Major slope failure or landslide",
-            selected = selectedIncident == "major_landslide",
+            description =
+                "Major slope failure or landslide",
+
+            selected =
+                selectedIncident == "major_landslide",
+
             onClick = {
                 selectedIncident = "major_landslide"
             }
@@ -208,14 +286,20 @@ fun ReportIncidentScreen() {
 
         IncidentOption(
             title = "Road Blockage",
-            description = "Road blocked due to debris or landslide",
-            selected = selectedIncident == "road_blockage",
+            description =
+                "Road blocked due to debris or landslide",
+
+            selected =
+                selectedIncident == "road_blockage",
+
             onClick = {
                 selectedIncident = "road_blockage"
             }
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
 
         Text(
             text = "Add Incident Photo",
@@ -224,24 +308,36 @@ fun ReportIncidentScreen() {
 
         OutlinedButton(
             onClick = {
-                imagePickerLauncher.launch(arrayOf("image/*"))
+                imagePickerLauncher.launch(
+                    arrayOf("image/*")
+                )
             },
-            modifier = Modifier.fillMaxWidth()
+
+            modifier =
+                Modifier.fillMaxWidth()
         ) {
-            Text("Select Photo from Gallery")
+
+            Text(
+                "Select Photo from Gallery"
+            )
         }
 
         if (selectedImageUri != null) {
+
             AsyncImage(
                 model = selectedImageUri,
-                contentDescription = "Selected incident image",
+                contentDescription =
+                    "Selected incident image",
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
 
         Text(
             text = "Location",
@@ -250,6 +346,7 @@ fun ReportIncidentScreen() {
 
         OutlinedButton(
             onClick = {
+
                 val fineGranted =
                     ContextCompat.checkSelfPermission(
                         context,
@@ -263,8 +360,11 @@ fun ReportIncidentScreen() {
                     ) == PackageManager.PERMISSION_GRANTED
 
                 if (fineGranted || coarseGranted) {
+
                     fetchLocation()
+
                 } else {
+
                     locationPermissionLauncher.launch(
                         arrayOf(
                             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -273,9 +373,14 @@ fun ReportIncidentScreen() {
                     )
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+
+            modifier =
+                Modifier.fillMaxWidth()
         ) {
-            Text("Get Current Location")
+
+            Text(
+                "Get Current Location"
+            )
         }
 
         Text(
@@ -284,38 +389,58 @@ fun ReportIncidentScreen() {
         )
 
         if (latitude != null && longitude != null) {
+
             Text(
-                text = "Lat: $latitude\nLng: $longitude",
-                style = MaterialTheme.typography.bodyMedium
+                text =
+                    "Lat: $latitude\nLng: $longitude",
+
+                style =
+                    MaterialTheme.typography.bodyMedium
             )
         }
 
         Button(
             onClick = {
+
                 if (selectedIncident == null) {
-                    locationStatus = "Please select an incident type"
+
+                    locationStatus =
+                        "Please select an incident type"
+
                     return@Button
                 }
 
-                if (latitude == null || longitude == null) {
-                    locationStatus = "Please fetch your location"
+                if (
+                    latitude == null ||
+                    longitude == null
+                ) {
+
+                    locationStatus =
+                        "Please fetch your location"
+
                     return@Button
                 }
 
-                val report = IncidentReport(
-                    deviceId = "phone_001",
-                    lat = latitude!!,
-                    lng = longitude!!,
-                    reportType = selectedIncident!!,
-                    timestamp = System.currentTimeMillis(),
-                    offlineSynced = false,
-                    imageUri = selectedImageUri?.toString()
-                )
+                val report =
+                    IncidentReport(
+                        deviceId = "phone_001",
+                        lat = latitude!!,
+                        lng = longitude!!,
+                        reportType = selectedIncident!!,
+                        timestamp =
+                            System.currentTimeMillis(),
+
+                        offlineSynced = false,
+
+                        imageUri =
+                            selectedImageUri?.toString()
+                    )
 
                 reportViewModel.saveIncident(
                     context = context,
                     report = report
                 ) { result ->
+
                     locationStatus = result
 
                     Log.d(
@@ -324,12 +449,19 @@ fun ReportIncidentScreen() {
                     )
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+
+            modifier =
+                Modifier.fillMaxWidth()
         ) {
-            Text("Submit Report")
+
+            Text(
+                "Submit Report"
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
         Text(
             text = "Recent Reports",
@@ -337,40 +469,57 @@ fun ReportIncidentScreen() {
         )
 
         if (reports.isEmpty()) {
+
             Text(
                 text = "No reports submitted yet.",
                 style = MaterialTheme.typography.bodyMedium
             )
+
         } else {
+
             reports.take(5).forEach { report ->
+
                 Card(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier =
+                        Modifier.fillMaxWidth()
                 ) {
+
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier =
+                            Modifier.padding(16.dp)
                     ) {
+
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            modifier =
+                                Modifier.fillMaxWidth(),
+
+                            verticalAlignment =
+                                Alignment.CenterVertically,
+
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween
                         ) {
+
                             Text(
-                                text = report.reportType
-                                    .replace("_", " ")
-                                    .uppercase()
+                                text =
+                                    report.reportType
+                                        .replace("_", " ")
+                                        .uppercase()
                             )
 
                             Text(
-                                text = if (report.offlineSynced) {
-                                    "SYNCED"
-                                } else {
-                                    "PENDING"
-                                }
+                                text =
+                                    if (report.offlineSynced) {
+                                        "SYNCED"
+                                    } else {
+                                        "PENDING"
+                                    }
                             )
                         }
 
                         Spacer(
-                            modifier = Modifier.height(6.dp)
+                            modifier =
+                                Modifier.height(6.dp)
                         )
 
                         Text(
