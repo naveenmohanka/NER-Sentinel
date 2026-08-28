@@ -4,6 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
+import dynamic from "next/dynamic";
+
+const SectorContextMap = dynamic(
+  () => import("@/components/SectorContextMap"),
+  { ssr: false, loading: () => <div className="p-8 text-center text-xs text-gray-500 font-mono">Loading 3D Sector Map...</div> }
+);
 
 export default function RiskAssessmentPage() {
   const [isDispatched, setIsDispatched] = useState(false);
@@ -77,23 +83,8 @@ export default function RiskAssessmentPage() {
                 </Link>
               </div>
 
-              <div className="relative flex-1 bg-slate-100 w-full overflow-hidden min-h-[420px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/risk-map-bg.png"
-                  alt="Location Context - Kalyanpur"
-                  className="w-full h-full object-cover opacity-90"
-                />
-
-                {/* Floating Status Badges on Map */}
-                <div className="absolute top-4 right-4 flex gap-2 z-10">
-                  <span className="bg-[#ba1a1a] text-white px-3 py-1 rounded-full font-bold text-[11px] shadow-sm">
-                    HIGH
-                  </span>
-                  <span className="bg-[#515f74] text-white px-3 py-1 rounded-full font-bold text-[11px] shadow-sm">
-                    BLOCKED
-                  </span>
-                </div>
+              <div className="relative flex-1 w-full overflow-hidden min-h-[460px]">
+                <SectorContextMap />
               </div>
             </div>
 
@@ -403,7 +394,7 @@ export default function RiskAssessmentPage() {
                     10:12 AM
                   </p>
                   <p className="text-xs text-[#45464d]">
-                    Automated weather alert triggered for Kalyanpur sector.
+                    Automated weather alert triggered for Ranipool Basin sector.
                   </p>
                 </div>
               </div>

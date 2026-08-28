@@ -36,9 +36,10 @@ export default function LiveRiskMap() {
 
   const [activeView, setActiveView] = useState<"ridge" | "valley" | "topdown">("ridge");
   const [is3D, setIs3D] = useState(true);
+  const [showRoadLabels, setShowRoadLabels] = useState(true);
   const [selectedZone, setSelectedZone] = useState(initialZones[0]);
-  const [roadCount, setRoadCount] = useState<number | null>(null);
-  const [statusMsg, setStatusMsg] = useState("3D GIS Operational Map Loaded (Gangtok Himalayan Sector)");
+  const [currentZoom, setCurrentZoom] = useState(13.5);
+  const [statusMsg, setStatusMsg] = useState("High-Detail 3D GIS Map Active (Zoom in for street-level road grid & topography)");
 
   // User Custom Location & Geolocation State
   const [userLat, setUserLat] = useState("27.3389");
@@ -47,7 +48,6 @@ export default function LiveRiskMap() {
   const [isGeolocating, setIsGeolocating] = useState(false);
 
   // LLM State
-  const [llmQuestion, setLlmQuestion] = useState("What is the flood and landslide risk at my current location and what immediate actions should I take?");
   const [llmAnswer, setLlmAnswer] = useState<any>(null);
   const [isLlmLoading, setIsLlmLoading] = useState(false);
   const [showLlmModal, setShowLlmModal] = useState(false);
@@ -67,6 +67,7 @@ export default function LiveRiskMap() {
           style: {
             version: 8,
             sources: {
+              // 1. High-Resolution Satellite Base
               "satellite-tiles": {
                 type: "raster",
                 tiles: [
@@ -75,6 +76,25 @@ export default function LiveRiskMap() {
                 tileSize: 256,
                 attribution: "Esri, USGS, NASA"
               },
+              // 2. Crystal-Clear Transparent Road & Highway Overlay (Zero Fog)
+              "hybrid-roads": {
+                type: "raster",
+                tiles: [
+                  "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+                ],
+                tileSize: 256,
+                maxzoom: 19
+              },
+              // 3. Crystal-Clear Transparent Street & Place Labels
+              "hybrid-labels": {
+                type: "raster",
+                tiles: [
+                  "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                ],
+                tileSize: 256,
+                maxzoom: 19
+              },
+              // 4. 3D Digital Elevation Terrain (DEM)
               "terrain-dem": {
                 type: "raster-dem",
                 encoding: "terrarium",
@@ -86,45 +106,78 @@ export default function LiveRiskMap() {
               }
             },
             layers: [
+              // Base High-Resolution Photorealistic Satellite Layer
               {
                 id: "satellite-layer",
                 type: "raster",
                 source: "satellite-tiles",
                 minzoom: 0,
                 maxzoom: 19
+              },
+              // Transparent Yellow/White Road Networks (Zero Background Haze)
+              {
+                id: "hybrid-roads-layer",
+                type: "raster",
+                source: "hybrid-roads",
+                minzoom: 10,
+                maxzoom: 19,
+                paint: {
+                  "raster-opacity": 0.95
+                }
+              },
+              // Transparent Town & Sector Name Labels
+              {
+                id: "hybrid-labels-layer",
+                type: "raster",
+                source: "hybrid-labels",
+                minzoom: 10,
+                maxzoom: 19,
+                paint: {
+                  "raster-opacity": 1.0
+                }
               }
             ],
             terrain: {
               source: "terrain-dem",
-              exaggeration: 1.8
+              exaggeration: 1.85
             }
           },
           center: [88.6138, 27.3314],
           zoom: 13.5,
+          maxZoom: 16.2,
           pitch: 65,
           bearing: -30,
-          maxPitch: 85,
+          maxPitch: 80,
           antialias: true
         });
 
         mapInstanceRef.current = map;
+
+        // Add Interactive Navigation Controls (Zoom In/Out, Compass, Pitch)
+        map.addControl(new maplibre.NavigationControl({ visualizePitch: true }), "top-left");
+        map.addControl(new maplibre.FullscreenControl(), "top-left");
+
+        map.on("zoom", () => {
+          const z = map.getZoom();
+          setCurrentZoom(Math.round(z * 10) / 10);
+        });
 
         map.on("load", () => {
           // Render Zone Markers
           initialZones.forEach((z) => {
             const el = document.createElement("div");
             el.className = "custom-map-marker";
-            el.style.width = "22px";
-            el.style.height = "22px";
+            el.style.width = "24px";
+            el.style.height = "24px";
             el.style.borderRadius = "50%";
             el.style.background = z.priority === "CRITICAL" ? "#ef4444" : z.priority === "HIGH" ? "#f97316" : "#eab308";
-            el.style.border = "2px solid white";
-            el.style.boxShadow = `0 0 14px ${z.priority === "CRITICAL" ? "#ef4444" : "#f97316"}`;
+            el.style.border = "2.5px solid white";
+            el.style.boxShadow = `0 0 16px ${z.priority === "CRITICAL" ? "#ef4444" : "#f97316"}`;
             el.style.cursor = "pointer";
 
             el.addEventListener("click", () => {
               setSelectedZone(z);
-              map.flyTo({ center: [z.lng, z.lat], zoom: 14.5, pitch: 70, duration: 1500 });
+              map.flyTo({ center: [z.lng, z.lat], zoom: 15.5, pitch: 70, duration: 1500 });
             });
 
             new maplibre.Marker({ element: el })
@@ -143,8 +196,8 @@ export default function LiveRiskMap() {
           evacuationCamps.forEach((c) => {
             const el = document.createElement("div");
             el.innerHTML = "⛺";
-            el.style.fontSize = "22px";
-            el.style.filter = "drop-shadow(0 0 8px rgba(16,185,129,0.9))";
+            el.style.fontSize = "24px";
+            el.style.filter = "drop-shadow(0 0 10px rgba(16,185,129,0.9))";
             el.style.cursor = "pointer";
 
             new maplibre.Marker({ element: el })
@@ -182,7 +235,7 @@ export default function LiveRiskMap() {
             paint: {
               "line-color": "#38bdf8",
               "line-width": 10,
-              "line-opacity": 0.4,
+              "line-opacity": 0.45,
               "line-blur": 3
             }
           });
@@ -211,6 +264,46 @@ export default function LiveRiskMap() {
     };
   }, []);
 
+  const toggleLabels = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (showRoadLabels) {
+      map.setLayoutProperty("hybrid-roads-layer", "visibility", "none");
+      map.setLayoutProperty("hybrid-labels-layer", "visibility", "none");
+      setShowRoadLabels(false);
+    } else {
+      map.setLayoutProperty("hybrid-roads-layer", "visibility", "visible");
+      map.setLayoutProperty("hybrid-labels-layer", "visibility", "visible");
+      setShowRoadLabels(true);
+    }
+  };
+
+  const changeView = (view: "ridge" | "valley" | "topdown") => {
+    setActiveView(view);
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (view === "ridge") {
+      map.flyTo({ center: [88.6138, 27.3314], zoom: 14.5, pitch: 70, bearing: -35, duration: 1800 });
+    } else if (view === "valley") {
+      map.flyTo({ center: [88.6100, 27.3400], zoom: 15.5, pitch: 78, bearing: 110, duration: 1800 });
+    } else if (view === "topdown") {
+      map.flyTo({ center: [88.6138, 27.3314], zoom: 14.0, pitch: 0, bearing: 0, duration: 1500 });
+    }
+  };
+
+  const toggleTerrain3D = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (is3D) {
+      map.setTerrain(null);
+      setIs3D(false);
+    } else {
+      map.setTerrain({ source: "terrain-dem", exaggeration: 1.85 });
+      setIs3D(true);
+    }
+  };
+
   // Geolocation Handler
   const handleGetLiveLocation = () => {
     if (!navigator.geolocation) {
@@ -219,7 +312,7 @@ export default function LiveRiskMap() {
     }
 
     setIsGeolocating(true);
-    setStatusMsg("📡 Requesting high-precision GPS coordinates from your device...");
+    setStatusMsg("📡 Acquiring GPS position...");
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -250,45 +343,43 @@ export default function LiveRiskMap() {
               .addTo(map);
           }
 
-          map.flyTo({ center: [lng, lat], zoom: 15, pitch: 70, duration: 1800 });
+          map.flyTo({ center: [lng, lat], zoom: 16.5, pitch: 72, duration: 1800 });
         }
 
-        setStatusMsg(`📍 Located at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. Click "Run Real-Time AI & LLM Prediction" below!`);
+        setStatusMsg(`📍 Located at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. High-resolution streets loaded.`);
       },
       (err) => {
         setIsGeolocating(false);
-        setStatusMsg("⚠️ Could not access GPS: " + err.message + ". You can still type coordinates manually.");
+        setStatusMsg("⚠️ Could not access GPS: " + err.message);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  // Quick Preset Selection
   const handlePresetSelect = (preset: string) => {
     if (preset === "ranipool") {
       setUserLat("27.2789");
       setUserLng("88.5944");
       setUserAreaName("Ranipool Basin Sector");
-      mapInstanceRef.current?.flyTo({ center: [88.5944, 27.2789], zoom: 14.5, pitch: 65 });
+      mapInstanceRef.current?.flyTo({ center: [88.5944, 27.2789], zoom: 16.0, pitch: 70 });
     } else if (preset === "bhusuk") {
       setUserLat("27.3335");
       setUserLng("88.6472");
       setUserAreaName("Bhusuk Mountain Ridge");
-      mapInstanceRef.current?.flyTo({ center: [88.6472, 27.3335], zoom: 14.5, pitch: 70 });
+      mapInstanceRef.current?.flyTo({ center: [88.6472, 27.3335], zoom: 16.0, pitch: 74 });
     } else if (preset === "passi") {
       setUserLat("27.1354");
       setUserLng("88.4501");
       setUserAreaName("Passi Escarpment");
-      mapInstanceRef.current?.flyTo({ center: [88.4501, 27.1354], zoom: 15, pitch: 72 });
+      mapInstanceRef.current?.flyTo({ center: [88.4501, 27.1354], zoom: 16.0, pitch: 72 });
     } else if (preset === "singtam") {
       setUserLat("27.2317");
       setUserLng("88.4992");
       setUserAreaName("Singtam Valley Sector");
-      mapInstanceRef.current?.flyTo({ center: [88.4992, 27.2317], zoom: 14, pitch: 60 });
+      mapInstanceRef.current?.flyTo({ center: [88.4992, 27.2317], zoom: 15.5, pitch: 65 });
     }
   };
 
-  // Run Real-Time AI Prediction & LLM Reasoning for User's Exact Location
   const runPredictionForUserLocation = async () => {
     const latNum = parseFloat(userLat);
     const lngNum = parseFloat(userLng);
@@ -300,9 +391,7 @@ export default function LiveRiskMap() {
 
     setIsLlmLoading(true);
     setShowLlmModal(true);
-    setStatusMsg(`🧠 Running NASA Multi-Satellite & LLM model for [${latNum.toFixed(4)}, ${lngNum.toFixed(4)}]...`);
 
-    // Dynamically calculate distance to nearest camp
     let nearestCamp = evacuationCamps[0];
     let minDist = Infinity;
     evacuationCamps.forEach((c) => {
@@ -341,96 +430,19 @@ export default function LiveRiskMap() {
       const data = await res.json();
       setLlmAnswer(data.ai_explanation);
     } catch (err) {
-      // Grounded Expert Synthesis Fallback
-      const isHighHazard = payload.prediction.flood_probability > 0.7 || payload.prediction.landslide_probability > 0.7;
       setLlmAnswer({
-        summary: `${userAreaName} [${latNum.toFixed(4)}, ${lngNum.toFixed(4)}] exhibits an elevated disaster threat with critical ground saturation and runoff velocity.`,
-        flood_explanation: `Flood risk is high (${Math.round(payload.prediction.flood_probability * 100)}% probability) driven by severe 7-day rainfall accumulation (${payload.features.rain_7d}mm) and high SMAP ground saturation (${payload.features.soil_moisture} m³/m³).`,
+        summary: `${userAreaName} [${latNum.toFixed(4)}, ${lngNum.toFixed(4)}] exhibits an elevated disaster threat with critical ground saturation.`,
+        flood_explanation: `Flood risk is high (${Math.round(payload.prediction.flood_probability * 100)}% probability) driven by severe rainfall accumulation (${payload.features.rain_7d}mm).`,
         landslide_explanation: `Landslide risk is high (${Math.round(payload.prediction.landslide_probability * 100)}% probability) due to steep terrain (${payload.features.slope_deg}° slope gradient at ${payload.features.elevation_m}m elevation).`,
         precautions: [
           "Monitor real-time alerts from District Disaster Management Authority (DDMA)",
-          "Avoid non-essential transit along steep mountain highway cuts (e.g. NH-10)",
-          "Stay clear of active river corridors (Teesta / Ranipool) prone to sudden flash inundation",
+          "Avoid non-essential transit along steep mountain highway cuts (NH-10)",
+          "Stay clear of active river corridors (Teesta / Ranipool)",
           `Follow designated 3D safe route towards nearest shelter: ${nearestCamp.name} (${Math.round(minDist)}m away)`
         ]
       });
     } finally {
       setIsLlmLoading(false);
-    }
-  };
-
-  const changeView = (view: "ridge" | "valley" | "topdown") => {
-    setActiveView(view);
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    if (view === "ridge") {
-      map.flyTo({ center: [88.6138, 27.3314], zoom: 13.8, pitch: 68, bearing: -35, duration: 1800 });
-    } else if (view === "valley") {
-      map.flyTo({ center: [88.6100, 27.3400], zoom: 14.5, pitch: 78, bearing: 110, duration: 1800 });
-    } else if (view === "topdown") {
-      map.flyTo({ center: [88.6138, 27.3314], zoom: 13.2, pitch: 0, bearing: 0, duration: 1500 });
-    }
-  };
-
-  const toggleTerrain3D = () => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    if (is3D) {
-      map.setTerrain(null);
-      setIs3D(false);
-    } else {
-      map.setTerrain({ source: "terrain-dem", exaggeration: 1.8 });
-      setIs3D(true);
-    }
-  };
-
-  const loadRealOSMRoads = async () => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    setStatusMsg("📡 Fetching OpenStreetMap highway grid for Gangtok sector...");
-
-    try {
-      const query = `
-        [out:json][timeout:25];
-        way["highway"](27.28,88.58,27.40,88.66);
-        (._;>;);
-        out body;
-      `;
-      const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-      const data = await res.json();
-
-      const nodes: Record<string, { lat: number; lng: number }> = {};
-      data.elements.forEach((el: any) => {
-        if (el.type === "node") nodes[el.id] = { lat: el.lat, lng: el.lon };
-      });
-
-      const features: any[] = [];
-      data.elements.forEach((el: any) => {
-        if (el.type === "way" && el.nodes) {
-          const coords = el.nodes.map((nid: string) => nodes[nid] ? [nodes[nid].lng, nodes[nid].lat] : null).filter(Boolean);
-          if (coords.length > 1) {
-            features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords } });
-          }
-        }
-      });
-
-      if (map.getSource("osm-roads")) {
-        map.getSource("osm-roads").setData({ type: "FeatureCollection", features });
-      } else {
-        map.addSource("osm-roads", { type: "geojson", data: { type: "FeatureCollection", features } });
-        map.addLayer({
-          id: "osm-roads-layer",
-          type: "line",
-          source: "osm-roads",
-          paint: { "line-color": "#94a3b8", "line-width": 1.5, "line-opacity": 0.6 }
-        });
-      }
-
-      setRoadCount(features.length);
-      setStatusMsg(`✅ Successfully loaded ${features.length} real road segments.`);
-    } catch (e: any) {
-      setStatusMsg("❌ Failed to fetch live OSM roads: " + e.message);
     }
   };
 
@@ -446,7 +458,7 @@ export default function LiveRiskMap() {
             map
           </span>
           <h3 className="text-xl font-bold text-[#1b1b1d] tracking-tight">
-            Live 3D Risk &amp; Connectivity Map (Gangtok Sector)
+            Live 3D Risk &amp; High-Detail Road Map (Gangtok Sector)
           </h3>
         </div>
 
@@ -477,10 +489,10 @@ export default function LiveRiskMap() {
             {is3D ? "3D: ON" : "3D: OFF"}
           </button>
           <button
-            onClick={loadRealOSMRoads}
-            className="px-2.5 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-bold"
+            onClick={toggleLabels}
+            className="px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold border border-emerald-200"
           >
-            📡 Roads {roadCount ? `(${roadCount})` : ""}
+            {showRoadLabels ? "🛣️ Streets: ON" : "🛣️ Streets: OFF"}
           </button>
         </div>
       </div>
@@ -541,7 +553,7 @@ export default function LiveRiskMap() {
       </div>
 
       {/* 3D Map Canvas Box */}
-      <div className="bg-slate-950 rounded-2xl border border-[#dcd9db] shadow-sm overflow-hidden relative h-[560px]">
+      <div className="bg-slate-950 rounded-2xl border border-[#dcd9db] shadow-sm overflow-hidden relative h-[580px]">
         {/* WebGL Map Container */}
         <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
@@ -624,15 +636,15 @@ export default function LiveRiskMap() {
                 <span className="font-mono font-bold text-blue-600">86% RH</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#45464d] font-semibold">Safe Corridor:</span>
-                <span className="font-mono font-bold text-emerald-600">Camp Gangtok Central</span>
+                <span className="text-[#45464d] font-semibold">Zoom Level:</span>
+                <span className="font-mono font-bold text-emerald-600">{currentZoom}x (High-Detail)</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Floating Bottom Left: Live 3D Legend */}
-        <div className="absolute bottom-4 left-4 rounded-xl shadow-lg w-52 z-20 p-3 bg-white/90 backdrop-blur-xl border border-white/60">
+        <div className="absolute bottom-4 left-4 rounded-xl shadow-lg w-56 z-20 p-3 bg-white/90 backdrop-blur-xl border border-white/60">
           <h5 className="text-[10px] text-[#45464d] font-bold uppercase tracking-wider mb-2">
             3D GIS Legend &amp; Corridors
           </h5>
