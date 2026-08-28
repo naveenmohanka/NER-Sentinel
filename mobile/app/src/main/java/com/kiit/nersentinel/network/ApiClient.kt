@@ -7,7 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    private const val BASE_URL = "http://10.5.68.27:8080/"
+    // Physical device on the current network reaches the host backend via the host LAN IP.
+    private const val BASE_URL = "http://10.0.169.50:8080/"
 
     private val loggingInterceptor =
         HttpLoggingInterceptor().apply {

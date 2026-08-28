@@ -12,7 +12,9 @@ object SyncScheduler {
     fun schedule(context: Context) {
 
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(
+                NetworkType.CONNECTED
+            )
             .build()
 
         val request =
@@ -21,7 +23,7 @@ object SyncScheduler {
                 .build()
 
         WorkManager
-            .getInstance(context)
+            .getInstance(context.applicationContext)
             .enqueueUniqueWork(
                 "incident_sync_work",
                 ExistingWorkPolicy.REPLACE,

@@ -9,15 +9,29 @@ import com.kiit.nersentinel.network.ApiClient
 import com.kiit.nersentinel.network.MultipartUtils
 import com.kiit.nersentinel.network.ReportRequest
 import com.kiit.nersentinel.worker.SyncScheduler
+import com.kiit.nersentinel.worker.SyncStatusManager
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 class ReportViewModel(
     private val repository: IncidentRepository
 ) : ViewModel() {
+
+    private val _syncMessage =
+        MutableSharedFlow<String>(
+            replay = 0,
+            extraBufferCapacity = 1
+        )
+
+    val syncMessage: SharedFlow<String> =
+        _syncMessage
 
     val reports = repository
         .getAllIncidents()
@@ -26,6 +40,20 @@ class ReportViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    init {
+        viewModelScope.launch {
+            SyncStatusManager.message.collectLatest { message ->
+
+                if (message != null) {
+
+                    _syncMessage.emit(message)
+
+                    SyncStatusManager.clear()
+                }
+            }
+        }
+    }
 
     fun saveIncident(
         context: Context,
@@ -36,16 +64,17 @@ class ReportViewModel(
 
             try {
 
-                // 1. Always save locally first
                 val incidentId =
                     repository.saveIncident(report)
 
                 val response =
-                    if (report.imageUri != null) {
+                    if (!report.imageUri.isNullOrBlank()) {
 
-                        // 2A. Image attached → multipart upload
                         val reportData =
-                            createMultipartReportData(report)
+                            createMultipartReportData(
+                                report = report,
+                                offlineSynced = false
+                            )
 
                         val imagePart =
                             MultipartUtils.createImagePart(
@@ -60,20 +89,14 @@ class ReportViewModel(
 
                     } else {
 
-                        // 2B. No image → existing JSON API
-                        val request = ReportRequest(
-                            deviceId = report.deviceId,
-                            lat = report.lat,
-                            lng = report.lng,
-                            reportType = report.reportType,
-                            timestamp = report.timestamp,
-                            offlineSynced = report.offlineSynced
+                        ApiClient.apiService.submitReport(
+                            buildReportRequest(
+                                report = report,
+                                offlineSynced = false
+                            )
                         )
-
-                        ApiClient.apiService.submitReport(request)
                     }
 
-                // 3. Mark synced only after backend success
                 if (response.isSuccessful) {
 
                     repository.markIncidentAsSynced(incidentId)
@@ -91,7 +114,9 @@ class ReportViewModel(
                     )
                 }
 
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+
+                e.printStackTrace()
 
                 SyncScheduler.schedule(context)
 
@@ -102,9 +127,25 @@ class ReportViewModel(
         }
     }
 
+    private fun buildReportRequest(
+        report: IncidentReport,
+        offlineSynced: Boolean
+    ): ReportRequest {
+
+        return ReportRequest(
+            deviceId = report.deviceId,
+            lat = report.lat,
+            lng = report.lng,
+            reportType = report.reportType,
+            timestamp = report.timestamp,
+            offlineSynced = offlineSynced
+        )
+    }
+
     private fun createMultipartReportData(
-        report: IncidentReport
-    ): Map<String, okhttp3.RequestBody> {
+        report: IncidentReport,
+        offlineSynced: Boolean
+    ): Map<String, RequestBody> {
 
         val mediaType =
             "text/plain".toMediaTypeOrNull()
@@ -128,7 +169,7 @@ class ReportViewModel(
                 .toString()
                 .toRequestBody(mediaType),
 
-            "offline_synced" to report.offlineSynced
+            "offline_synced" to offlineSynced
                 .toString()
                 .toRequestBody(mediaType)
         )
