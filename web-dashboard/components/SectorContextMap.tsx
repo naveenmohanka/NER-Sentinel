@@ -252,15 +252,16 @@ export default function SectorContextMap() {
   const toggleStreetGrid = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    if (showStreets) {
-      map.setLayoutProperty("osm-highways-layer", "visibility", "none");
-      map.setLayoutProperty("street-labels-layer", "visibility", "none");
-      setShowStreets(false);
-    } else {
-      map.setLayoutProperty("osm-highways-layer", "visibility", "visible");
-      map.setLayoutProperty("street-labels-layer", "visibility", "visible");
-      setShowStreets(true);
+    const nextState = !showStreets;
+    const visibility = nextState ? "visible" : "none";
+
+    if (map.getLayer("hybrid-roads-layer")) {
+      map.setLayoutProperty("hybrid-roads-layer", "visibility", visibility);
     }
+    if (map.getLayer("hybrid-labels-layer")) {
+      map.setLayoutProperty("hybrid-labels-layer", "visibility", visibility);
+    }
+    setShowStreets(nextState);
   };
 
   return (
