@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import HelpChatWidget from "@/components/HelpChatWidget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -42,6 +43,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[#f6f3f5] text-[#1b1b1d]">
         {children}
+        <HelpChatWidget />
       </body>
     </html>
   );
