@@ -75,7 +75,7 @@ export default function Live2DStreetIncidentMap() {
 
       try {
         const mlgl = await import("maplibre-gl");
-        maplibre = mlgl.default || mlgl;
+        maplibre = mlgl;
 
         // Direct Google Maps Live Tiles Integration (Google Streets / Hybrid / Terrain)
         const map = new maplibre.Map({
@@ -336,3 +336,4 @@ export default function Live2DStreetIncidentMap() {
     </div>
   );
 }
+
