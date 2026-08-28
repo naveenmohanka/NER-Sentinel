@@ -1,32 +1,30 @@
 package com.example.nersentinel.models;
 
 public class ReportRequest {
-    private String device_id;
+    private String deviceId;
     private double lat;
     private double lng;
-    private String report_type;
+    private String reportType;
     private long timestamp;
-    private boolean offline_synced;
-    private String image_url;
+    private boolean offlineSynced;
 
-    public ReportRequest() {
-    }
+    public ReportRequest() {}
 
-    public ReportRequest(String device_id, double lat, double lng, String report_type, long timestamp, boolean offline_synced) {
-        this.device_id = device_id;
+    public ReportRequest(String deviceId, double lat, double lng, String reportType, long timestamp, boolean offlineSynced) {
+        this.deviceId = deviceId;
         this.lat = lat;
         this.lng = lng;
-        this.report_type = report_type;
+        this.reportType = reportType;
         this.timestamp = timestamp;
-        this.offline_synced = offline_synced;
+        this.offlineSynced = offlineSynced;
     }
 
-    public String getDevice_id() {
-        return device_id;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setDevice_id(String device_id) {
-        this.device_id = device_id;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public double getLat() {
@@ -45,12 +43,12 @@ public class ReportRequest {
         this.lng = lng;
     }
 
-    public String getReport_type() {
-        return report_type;
+    public String getReportType() {
+        return reportType;
     }
 
-    public void setReport_type(String report_type) {
-        this.report_type = report_type;
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
     }
 
     public long getTimestamp() {
@@ -61,19 +59,11 @@ public class ReportRequest {
         this.timestamp = timestamp;
     }
 
-    public boolean isOffline_synced() {
-        return offline_synced;
+    public boolean isOfflineSynced() {
+        return offlineSynced;
     }
 
-    public void setOffline_synced(boolean offline_synced) {
-        this.offline_synced = offline_synced;
-    }
-
-    public String getImage_url() {
-        return image_url;
-    }
-
-    public void setImage_url(String image_url) {
-        this.image_url = image_url;
+    public void setOfflineSynced(boolean offlineSynced) {
+        this.offlineSynced = offlineSynced;
     }
 }

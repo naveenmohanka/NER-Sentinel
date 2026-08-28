@@ -50,7 +50,7 @@ public class ApiController {
     }
 
     @GetMapping("/reports")
-    public ResponseEntity<List<Map<String, Object>>> getReports() {
+    public ResponseEntity<?> getReports() {
         return ResponseEntity.ok(riskService.getAllReports());
     }
 
