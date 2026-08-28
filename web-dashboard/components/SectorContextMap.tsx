@@ -23,7 +23,7 @@ export default function SectorContextMap() {
 
       try {
         const mlgl = await import("maplibre-gl");
-        maplibre = mlgl.default || mlgl;
+        maplibre = mlgl;
 
         const map = new maplibre.Map({
           container: mapContainerRef.current,
@@ -323,3 +323,4 @@ export default function SectorContextMap() {
     </div>
   );
 }
+

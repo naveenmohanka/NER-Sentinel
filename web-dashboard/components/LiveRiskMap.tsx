@@ -109,7 +109,7 @@ export default function LiveRiskMap() {
 
       try {
         const mlgl = await import("maplibre-gl");
-        maplibre = mlgl.default || mlgl;
+        maplibre = mlgl;
 
         const map = new maplibre.Map({
           container: mapContainerRef.current,
@@ -295,7 +295,7 @@ export default function LiveRiskMap() {
     markersRef.current = [];
 
     import("maplibre-gl").then((mlgl) => {
-      const maplibre = mlgl.default || mlgl;
+      const maplibre = mlgl;
 
       zones.forEach((z) => {
         const isCritical = z.priority === "CRITICAL";
@@ -405,7 +405,7 @@ export default function LiveRiskMap() {
         const map = mapInstanceRef.current;
         if (map) {
           const mlgl = await import("maplibre-gl");
-          const maplibre = mlgl.default || mlgl;
+          const maplibre = mlgl;
 
           if (userMarkerRef.current) {
             userMarkerRef.current.setLngLat([lng, lat]);
@@ -832,3 +832,4 @@ export default function LiveRiskMap() {
     </div>
   );
 }
+
