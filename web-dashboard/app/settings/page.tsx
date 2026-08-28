@@ -226,55 +226,43 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Section 4: Backend API Gateways & Emergency Broadcasts */}
+            {/* Section 4: Emergency Broadcast & Alert Channels */}
             <div className="bg-white rounded-2xl border border-[#dcd9db] shadow-sm p-6 space-y-4">
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2.5">
-                <span className="material-symbols-outlined text-orange-600">hub</span>
-                <span>API Gateways &amp; Broadcast Channels</span>
+                <span className="material-symbols-outlined text-orange-600">campaign</span>
+                <span>Emergency Broadcast &amp; Notification Channels</span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <label className="font-bold text-gray-700 block mb-1">Spring Boot Risk Engine Endpoint:</label>
-                  <input
-                    type="text"
-                    value={riskEngineUrl}
-                    onChange={(e) => setRiskEngineUrl(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl p-2.5 font-mono text-xs focus:ring-2 focus:ring-blue-600 outline-none"
-                  />
+                <div className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer font-bold text-gray-900">
+                    <input
+                      type="checkbox"
+                      checked={smsAlertsEnabled}
+                      onChange={(e) => setSmsAlertsEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span>Public Emergency SMS Broadcast</span>
+                  </label>
+                  <p className="text-[11px] text-gray-600 pl-6">
+                    Automatically triggers regional cell-broadcast SMS to registered mobile numbers within active disaster corridors.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="font-bold text-gray-700 block mb-1">LLM Natural Language Advisor Endpoint:</label>
-                  <input
-                    type="text"
-                    value={llmApiUrl}
-                    onChange={(e) => setLlmApiUrl(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl p-2.5 font-mono text-xs focus:ring-2 focus:ring-blue-600 outline-none"
-                  />
+                <div className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer font-bold text-gray-900">
+                    <input
+                      type="checkbox"
+                      checked={audioSirenEnabled}
+                      onChange={(e) => setAudioSirenEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span>Tactical Audio Sirens for Critical Incidents</span>
+                  </label>
+                  <p className="text-[11px] text-gray-600 pl-6">
+                    Sounds audible alarm on the command dashboard when a Priority 1 CRITICAL hazard is confirmed.
+                  </p>
                 </div>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-semibold text-gray-800 border-t border-gray-100">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={smsAlertsEnabled}
-                    onChange={(e) => setSmsAlertsEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Enable Public SMS Broadcast Gateway</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={audioSirenEnabled}
-                    onChange={(e) => setAudioSirenEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Enable Tactical Audio Alert Sirens on Critical Incidents</span>
-                </label>
               </div>
             </div>
 
