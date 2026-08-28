@@ -362,33 +362,47 @@ The intended NER Sentinel demonstration is:
               ↓
        Command Dashboard Updated
 🛠️ Technology Stack
+
 Android Field Intelligence
-Kotlin
-Jetpack Compose
-Android ViewModel
-Room Database
-Retrofit
-OkHttp
-WorkManager
-GPS / Location APIs
-Android Photo Picker
-Nearby device communication / mesh layer
-Backend and Risk Engine
-Java
-Spring Boot
-REST APIs
-Maven
-Multipart file handling
-Dynamic Risk Engine
+- Kotlin
+- Jetpack Compose
+- Android ViewModel
+- Room Database
+- WorkManager
+- Retrofit / OkHttp
+- GPS & Location APIs
+- Android Photo Picker
+- Google Nearby / device-to-device communication
+
+Backend & Risk Engine
+- Java
+- Spring Boot
+- REST APIs
+- Maven
+- Multipart File Handling
+- Dynamic Risk Engine
+
 GIS Intelligence
-GIS-based map layers
-Geographic incident visualization
-Terrain context
-Dynamic route intelligence
-Dashboard
-Unified command and monitoring interface
-Live incident visibility
-Risk intelligence visualization
+- GIS-based Map Layers
+- Geographic Incident Visualization
+- Terrain Context
+- Dynamic Route Intelligence
+
+Command Dashboard
+- Unified Command & Monitoring Interface
+- Live Incident Visibility
+- Risk Intelligence Visualization
+
+DevOps & Engineering
+- GitHub
+- GitHub Actions
+- CI/CD Pipelines
+- Docker
+- Containerized Backend Deployment
+- GitHub Secrets
+- Branch Protection Rules
+- Feature Branch & Pull Request Workflow
+
 📁 Project Structure
 
 The project is organized into modular components.
