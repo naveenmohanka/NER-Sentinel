@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface Message {
   role: "assistant" | "user";
@@ -20,7 +21,7 @@ export default function HelpChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello Officer! 🤖 I am your **NVIDIA-powered App Navigation Assistant**. How can I help you navigate NER-Sentinel today?"
+      content: "Hello Officer! 👋 I am your **NVIDIA-powered App Navigation Assistant**. How can I help you navigate NER-Sentinel today?"
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,34 +79,53 @@ export default function HelpChatWidget() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Custom Avatar Action Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center justify-center shadow-2xl transition-all hover:scale-105 active:scale-95 border-2 border-white/40 group"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#0d0914] text-white flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95 border-2 border-[#ec4899]/60 hover:border-[#f97316] group overflow-hidden"
+        style={{
+          boxShadow: "0 0 20px rgba(236, 72, 153, 0.45)"
+        }}
         aria-label="Open App Navigation Assistant"
       >
-        <span className="text-2xl group-hover:rotate-12 transition-transform">
-          {isOpen ? "✕" : "🤖"}
-        </span>
+        {isOpen ? (
+          <span className="text-xl font-bold text-white">✕</span>
+        ) : (
+          <div className="relative w-11 h-11 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/ai-bot-avatar.png"
+              alt="AI Assistant"
+              className="w-full h-full object-contain drop-shadow group-hover:scale-105 transition-transform"
+            />
+          </div>
+        )}
         {!isOpen && (
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
+          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0d0914] animate-pulse" />
         )}
       </button>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[90vw] h-[520px] max-h-[75vh] bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[90vw] h-[530px] max-h-[75vh] bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-3.5 flex items-center justify-between border-b border-white/10">
+          <div className="bg-gradient-to-r from-[#0d0914] via-[#1a102f] to-[#0d0914] text-white p-3 flex items-center justify-between border-b border-white/10">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-base">
-                🤖
+              <div className="w-9 h-9 rounded-full bg-[#0d0914] border border-[#ec4899]/60 p-0.5 flex items-center justify-center shrink-0 shadow-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/ai-bot-avatar.png"
+                  alt="AI Bot"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h4 className="font-bold text-xs leading-tight flex items-center gap-1.5">
-                  <span>NVIDIA Navigation Bot</span>
-                  <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded text-[9px] font-mono">
+                  <span className="bg-gradient-to-r from-orange-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+                    NVIDIA Navigation Bot
+                  </span>
+                  <span className="px-1.5 py-0.2 bg-purple-500/20 text-purple-300 rounded text-[9px] font-mono border border-purple-400/30">
                     NIM AI
                   </span>
                 </h4>
@@ -128,13 +148,24 @@ export default function HelpChatWidget() {
               return (
                 <div
                   key={idx}
-                  className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
+                  className={`flex items-start gap-2 ${isAssistant ? "justify-start" : "justify-end"}`}
                 >
+                  {isAssistant && (
+                    <div className="w-6 h-6 rounded-full bg-[#0d0914] border border-[#ec4899]/50 p-0.5 shrink-0 mt-0.5 shadow-xs">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/ai-bot-avatar.png"
+                        alt="Bot"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+
                   <div
-                    className={`max-w-[85%] rounded-2xl p-3 shadow-xs leading-relaxed ${
+                    className={`max-w-[82%] rounded-2xl p-3 shadow-xs leading-relaxed ${
                       isAssistant
                         ? "bg-white border border-gray-200 text-gray-900 rounded-tl-xs"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-xs"
+                        : "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white rounded-tr-xs"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{m.content}</p>
@@ -144,11 +175,19 @@ export default function HelpChatWidget() {
             })}
 
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-2xl p-2.5 rounded-tl-xs shadow-xs flex items-center gap-2 text-xs text-gray-500">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" />
-                  <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]" />
+              <div className="flex items-start gap-2 justify-start">
+                <div className="w-6 h-6 rounded-full bg-[#0d0914] border border-[#ec4899]/50 p-0.5 shrink-0 mt-0.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/ai-bot-avatar.png"
+                    alt="Bot"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-2.5 rounded-tl-xs shadow-xs flex items-center gap-1.5 text-xs text-gray-500">
+                  <div className="w-2 h-2 rounded-full bg-purple-600 animate-bounce" />
+                  <div className="w-2 h-2 rounded-full bg-pink-600 animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
             )}
@@ -163,7 +202,7 @@ export default function HelpChatWidget() {
                 key={i}
                 type="button"
                 onClick={() => sendMessage(chip)}
-                className="whitespace-nowrap px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-gray-700 rounded-full font-medium border border-gray-200 transition-colors shrink-0"
+                className="whitespace-nowrap px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-gray-700 rounded-full font-medium border border-gray-200 transition-colors shrink-0"
               >
                 {chip}
               </button>
@@ -183,12 +222,12 @@ export default function HelpChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask how to use any feature..."
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-blue-600"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-purple-600"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+              className="px-3.5 py-2 bg-gradient-to-r from-orange-500 via-pink-600 to-purple-600 hover:opacity-90 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-opacity"
             >
               Send
             </button>
