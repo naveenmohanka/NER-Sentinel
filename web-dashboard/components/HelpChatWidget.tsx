@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface Message {
   role: "assistant" | "user";
@@ -21,15 +20,63 @@ export default function HelpChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello Officer! 👋 I am your **NVIDIA-powered App Navigation Assistant**. How can I help you navigate NER-Sentinel today?"
+      content: "Hello! 👋 I am your **NER-Sentinel Navigation Assistant**. How can I help you today?"
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showHello, setShowHello] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Draggable state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const hasDragged = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Hide hello bubble after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHello(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Drag handlers
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    setIsDragging(true);
+    hasDragged.current = false;
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: position.x,
+      origY: position.y,
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [position]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging || !dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasDragged.current = true;
+    }
+    setPosition({
+      x: dragRef.current.origX + dx,
+      y: dragRef.current.origY + dy,
+    });
+  }, [isDragging]);
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    setIsDragging(false);
+    dragRef.current = null;
+    if (!hasDragged.current) {
+      setIsOpen((prev) => !prev);
+      setShowHello(false);
+    }
+  }, []);
 
   const sendMessage = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
@@ -41,7 +88,7 @@ export default function HelpChatWidget() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5001/api/chat", {
+      const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -54,7 +101,6 @@ export default function HelpChatWidget() {
         const data = await res.json();
         setMessages([...newMessages, { role: "assistant", content: data.reply }]);
       } else {
-        // Fallback response
         setMessages([
           ...newMessages,
           {
@@ -64,7 +110,6 @@ export default function HelpChatWidget() {
         ]);
       }
     } catch (err) {
-      // Offline fallback
       setMessages([
         ...newMessages,
         {
@@ -79,63 +124,90 @@ export default function HelpChatWidget() {
 
   return (
     <>
-      {/* Floating Custom Avatar Action Button */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#0d0914] text-white flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95 border-2 border-[#ec4899]/60 hover:border-[#f97316] group overflow-hidden"
+      {/* Draggable Floating Chatbot Avatar with Hello Bubble */}
+      <div
+        className="fixed z-50 select-none"
         style={{
-          boxShadow: "0 0 20px rgba(236, 72, 153, 0.45)"
+          bottom: `${24 - position.y}px`,
+          right: `${24 - position.x}px`,
+          cursor: isDragging ? "grabbing" : "grab",
+          touchAction: "none",
         }}
-        aria-label="Open App Navigation Assistant"
       >
-        {isOpen ? (
-          <span className="text-xl font-bold text-white">✕</span>
-        ) : (
-          <div className="relative w-11 h-11 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/ai-bot-avatar.png"
-              alt="AI Assistant"
-              className="w-full h-full object-contain drop-shadow group-hover:scale-105 transition-transform"
-            />
+        {/* Hello Speech Bubble */}
+        {!isOpen && showHello && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap animate-bounce">
+            <div className="bg-white text-teal-600 font-bold text-sm px-4 py-1.5 rounded-full shadow-lg border border-teal-200">
+              Hello! 👋
+              {/* Bubble arrow */}
+              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-teal-200 rotate-45" />
+            </div>
           </div>
         )}
+
+        {/* Cute Robot Avatar Button */}
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          className="w-16 h-16 rounded-full overflow-hidden shadow-2xl transition-transform hover:scale-110 active:scale-95 border-3 border-teal-400/80 hover:border-teal-300"
+          style={{
+            boxShadow: "0 0 25px rgba(45, 212, 191, 0.5), 0 4px 15px rgba(0,0,0,0.2)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/chatbot_avatar.jpg"
+            alt="AI Assistant"
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+        </div>
+
+        {/* Online indicator */}
         {!isOpen && (
-          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0d0914] animate-pulse" />
+          <span className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white animate-pulse shadow-sm" />
         )}
-      </button>
+      </div>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[90vw] h-[530px] max-h-[75vh] bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div
+          className="fixed z-50 w-[370px] max-w-[90vw] h-[530px] max-h-[75vh] bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          style={{
+            bottom: `${96 - position.y}px`,
+            right: `${24 - position.x}px`,
+            animation: "slideUp 0.25s ease-out",
+          }}
+        >
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#0d0914] via-[#1a102f] to-[#0d0914] text-white p-3 flex items-center justify-between border-b border-white/10">
+          <div className="bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-700 text-white p-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#0d0914] border border-[#ec4899]/60 p-0.5 flex items-center justify-center shrink-0 shadow-md">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30 shadow-md shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/ai-bot-avatar.png"
+                  src="/chatbot_avatar.jpg"
                   alt="AI Bot"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div>
-                <h4 className="font-bold text-xs leading-tight flex items-center gap-1.5">
-                  <span className="bg-gradient-to-r from-orange-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                    NVIDIA Navigation Bot
-                  </span>
-                  <span className="px-1.5 py-0.2 bg-purple-500/20 text-purple-300 rounded text-[9px] font-mono border border-purple-400/30">
-                    NIM AI
+                <h4 className="font-bold text-sm leading-tight flex items-center gap-1.5">
+                  NER-Sentinel Bot
+                  <span className="px-1.5 py-0.5 bg-white/20 text-teal-100 rounded text-[9px] font-mono border border-white/20">
+                    AI
                   </span>
                 </h4>
-                <span className="text-[10px] text-gray-400">NER-Sentinel Command Assistant</span>
+                <span className="text-[10px] text-teal-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
+                  Online • Navigation & Safety Assistant
+                </span>
               </div>
             </div>
 
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white text-base font-bold p-1"
+              className="text-white/70 hover:text-white text-lg font-bold p-1 hover:bg-white/10 rounded-lg transition-colors"
             >
               ✕
             </button>
@@ -143,55 +215,39 @@ export default function HelpChatWidget() {
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs bg-slate-50/50">
-            {messages.map((m, idx) => {
-              const isAssistant = m.role === "assistant";
-              return (
-                <div
-                  key={idx}
-                  className={`flex items-start gap-2 ${isAssistant ? "justify-start" : "justify-end"}`}
-                >
-                  {isAssistant && (
-                    <div className="w-6 h-6 rounded-full bg-[#0d0914] border border-[#ec4899]/50 p-0.5 shrink-0 mt-0.5 shadow-xs">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/ai-bot-avatar.png"
-                        alt="Bot"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                  )}
-
-                  <div
-                    className={`max-w-[82%] rounded-2xl p-3 shadow-xs leading-relaxed ${
-                      isAssistant
-                        ? "bg-white border border-gray-200 text-gray-900 rounded-tl-xs"
-                        : "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white rounded-tr-xs"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{m.content}</p>
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} gap-2`}
+              >
+                {msg.role === "assistant" && (
+                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-1 border border-teal-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/chatbot_avatar.jpg" alt="Bot" className="w-full h-full object-cover" />
                   </div>
+                )}
+                <div
+                  className={`max-w-[80%] px-3 py-2 rounded-xl leading-relaxed whitespace-pre-line ${
+                    msg.role === "user"
+                      ? "bg-teal-600 text-white rounded-br-sm"
+                      : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-xs"
+                  }`}
+                >
+                  {msg.content}
                 </div>
-              );
-            })}
-
+              </div>
+            ))}
             {isLoading && (
-              <div className="flex items-start gap-2 justify-start">
-                <div className="w-6 h-6 rounded-full bg-[#0d0914] border border-[#ec4899]/50 p-0.5 shrink-0 mt-0.5">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-teal-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/ai-bot-avatar.png"
-                    alt="Bot"
-                    className="w-full h-full object-contain"
-                  />
+                  <img src="/chatbot_avatar.jpg" alt="Bot" className="w-full h-full object-cover" />
                 </div>
-                <div className="bg-white border border-gray-200 rounded-2xl p-2.5 rounded-tl-xs shadow-xs flex items-center gap-1.5 text-xs text-gray-500">
-                  <div className="w-2 h-2 rounded-full bg-purple-600 animate-bounce" />
-                  <div className="w-2 h-2 rounded-full bg-pink-600 animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-bounce [animation-delay:0.4s]" />
+                <div className="bg-white text-gray-400 px-3 py-2 rounded-xl border border-gray-200 italic text-[11px]">
+                  Thinking...
                 </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
 
@@ -202,7 +258,7 @@ export default function HelpChatWidget() {
                 key={i}
                 type="button"
                 onClick={() => sendMessage(chip)}
-                className="whitespace-nowrap px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-gray-700 rounded-full font-medium border border-gray-200 transition-colors shrink-0"
+                className="whitespace-nowrap px-2.5 py-1 bg-teal-50 hover:bg-teal-100 hover:text-teal-700 text-gray-700 rounded-full font-medium border border-teal-200 transition-colors shrink-0"
               >
                 {chip}
               </button>
@@ -222,18 +278,32 @@ export default function HelpChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask how to use any feature..."
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-purple-600"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-teal-500"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-3.5 py-2 bg-gradient-to-r from-orange-500 via-pink-600 to-purple-600 hover:opacity-90 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-opacity"
+              className="px-3.5 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:opacity-90 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-opacity"
             >
               Send
             </button>
           </form>
         </div>
       )}
+
+      {/* Slide-up animation */}
+      <style jsx global>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>
   );
 }

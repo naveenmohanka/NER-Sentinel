@@ -5,6 +5,7 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
 import dynamic from "next/dynamic";
+import InSARMonitor from "@/components/InSARMonitor";
 
 const SectorContextMap = dynamic(
   () => import("@/components/SectorContextMap"),
@@ -479,6 +480,9 @@ export default function RiskAssessmentPage() {
               </div>
             </div>
           </div>
+
+          {/* InSAR Ground Deformation Monitor */}
+          <InSARMonitor />
         </main>
       </div>
     </div>

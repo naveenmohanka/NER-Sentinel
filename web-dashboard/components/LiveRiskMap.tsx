@@ -35,7 +35,7 @@ export default function LiveRiskMap() {
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
 
-  const [activeView, setActiveView] = useState<"ridge" | "valley" | "topdown">("ridge");
+  const [activeView, setActiveView] = useState<"ridge" | "valley" | "topdown" | "rivers">("ridge");
   const [is3D, setIs3D] = useState(true);
   const [showRoadLabels, setShowRoadLabels] = useState(true);
   const [zones, setZones] = useState(fallbackZones);
@@ -75,7 +75,7 @@ export default function LiveRiskMap() {
       });
 
       try {
-        const res = await fetch("http://localhost:8080/api/v1/zones", { cache: "no-store" });
+        const res = await fetch("http://localhost:8000/api/v1/zones", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -270,6 +270,87 @@ export default function LiveRiskMap() {
               "line-opacity": 0.95
             }
           });
+
+          // Fetch dynamic Dijkstra Safe Route from Backend
+          fetch("http://localhost:8000/api/v1/safe-route?lat=27.3389&lon=88.6065")
+            .then(res => res.ok ? res.json() : null)
+            .then(routeData => {
+              if (routeData && routeData.geojson_corridor && map.getSource("evac-route")) {
+                map.getSource("evac-route").setData(routeData.geojson_corridor);
+              }
+            })
+            .catch(() => {});
+
+          // ── River Level Monitoring Stations ──
+          fetch("http://localhost:8000/api/v1/river-levels")
+            .then(res => res.ok ? res.json() : null)
+            .then(riverData => {
+              if (!riverData) return;
+              const severityColors: Record<string, string> = { RED: "#ef4444", ORANGE: "#f97316", YELLOW: "#eab308", GREEN: "#22c55e" };
+              riverData.rivers.forEach((r: any) => {
+                const el = document.createElement("div");
+                el.innerHTML = "🌊";
+                el.style.fontSize = "20px";
+                el.style.filter = `drop-shadow(0 0 8px ${severityColors[r.severity] || "#3b82f6"})`;
+                el.style.cursor = "pointer";
+                if (r.severity === "RED") el.style.animation = "pulse 1s infinite";
+
+                new maplibre.Marker({ element: el })
+                  .setLngLat([r.coordinates.longitude, r.coordinates.latitude])
+                  .setPopup(
+                    new maplibre.Popup({ maxWidth: "260px" }).setHTML(`
+                      <div style="font-family:Inter,sans-serif; padding:2px;">
+                        <div style="font-weight:800; color:${severityColors[r.severity]}; font-size:11px;">🌊 ${r.name}</div>
+                        <div style="font-size:9px; color:#64748b;">${r.monitoring_station} • ${r.state}</div>
+                        <div style="margin-top:4px; font-size:10px;">
+                          <b>Level:</b> ${r.levels.current_m}m / Danger: ${r.levels.danger_level_m}m<br/>
+                          <b>Status:</b> <span style="color:${severityColors[r.severity]}; font-weight:700;">${r.status}</span> • Trend: ${r.trend}<br/>
+                          <b>Action:</b> ${r.action}
+                        </div>
+                      </div>
+                    `)
+                  )
+                  .addTo(map);
+              });
+            })
+            .catch(() => {});
+
+          // ── GSI Landslide Susceptibility Zones ──
+          fetch("http://localhost:8000/api/v1/gsi-susceptibility")
+            .then(res => res.ok ? res.json() : null)
+            .then(gsiData => {
+              if (!gsiData) return;
+              const gsiColors: Record<string, string> = { "VERY HIGH": "#dc2626", HIGH: "#ea580c", MODERATE: "#ca8a04", LOW: "#16a34a" };
+              gsiData.zones.forEach((z: any) => {
+                const el = document.createElement("div");
+                el.innerHTML = "⚠️";
+                el.style.fontSize = "18px";
+                el.style.filter = `drop-shadow(0 0 6px ${gsiColors[z.susceptibility] || "#eab308"})`;
+                el.style.cursor = "pointer";
+
+                new maplibre.Marker({ element: el })
+                  .setLngLat([z.longitude, z.latitude])
+                  .setPopup(
+                    new maplibre.Popup({ maxWidth: "280px" }).setHTML(`
+                      <div style="font-family:Inter,sans-serif; padding:2px;">
+                        <div style="font-weight:800; color:${gsiColors[z.susceptibility]}; font-size:11px;">⚠️ GSI: ${z.susceptibility}</div>
+                        <div style="font-size:10px; font-weight:700; color:#1e293b;">${z.name}</div>
+                        <div style="font-size:9px; color:#64748b;">${z.state} • ${z.slope_range}</div>
+                        <div style="margin-top:4px; font-size:9.5px;">
+                          <b>Geology:</b> ${z.geology}<br/>
+                          <b>Land Use:</b> ${z.land_use}<br/>
+                          <b>Rainfall:</b> ${z.rainfall_zone}<br/>
+                          <b>Risks:</b> ${z.risk_factors.join(", ")}
+                        </div>
+                        <div style="margin-top:3px; font-size:8px; color:#94a3b8;">Source: ${z.source} (${z.gsi_report})</div>
+                      </div>
+                    `)
+                  )
+                  .addTo(map);
+              });
+            })
+            .catch(() => {});
+
         });
       } catch (err) {
         console.error("Map initialization error:", err);
@@ -357,7 +438,7 @@ export default function LiveRiskMap() {
     }
   };
 
-  const changeView = (view: "ridge" | "valley" | "topdown") => {
+  const changeView = (view: "ridge" | "valley" | "topdown" | "rivers") => {
     setActiveView(view);
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -368,6 +449,8 @@ export default function LiveRiskMap() {
       map.flyTo({ center: [88.6100, 27.3400], zoom: 15.5, pitch: 78, bearing: 110, duration: 1800 });
     } else if (view === "topdown") {
       map.flyTo({ center: [88.6138, 27.3314], zoom: 14.0, pitch: 0, bearing: 0, duration: 1500 });
+    } else if (view === "rivers") {
+      map.flyTo({ center: [92.5000, 25.8000], zoom: 6.2, pitch: 20, bearing: 0, duration: 2000 });
     }
   };
 
@@ -436,7 +519,9 @@ export default function LiveRiskMap() {
   };
 
   const handlePresetSelect = (preset: string) => {
-    if (preset === "ranipool") {
+    if (preset === "rivers") {
+      changeView("rivers");
+    } else if (preset === "ranipool") {
       setUserLat("27.2789");
       setUserLng("88.5944");
       setUserAreaName("Ranipool Basin Sector");
@@ -501,7 +586,7 @@ export default function LiveRiskMap() {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8001/explain-risk", {
+      const res = await fetch("http://localhost:8000/explain-risk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -520,6 +605,20 @@ export default function LiveRiskMap() {
           `Follow designated 3D safe route towards nearest shelter: ${nearestCamp.name} (${Math.round(minDist)}m away)`
         ]
       });
+      // Dynamically recalculate Dijkstra Safe Route for user location
+      try {
+        const routeRes = await fetch("http://localhost:8000/api/v1/safe-route", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_lat: latNum, user_lon: lngNum, avoid_landslides: true, avoid_flood_buffers: true })
+        });
+        if (routeRes.ok) {
+          const routeData = await routeRes.json();
+          if (mapInstanceRef.current && mapInstanceRef.current.getSource("evac-route")) {
+            mapInstanceRef.current.getSource("evac-route").setData(routeData.geojson_corridor);
+          }
+        }
+      } catch (e) {}
     } finally {
       setIsLlmLoading(false);
     }
@@ -568,6 +667,12 @@ export default function LiveRiskMap() {
             🗺️ 2D Top
           </button>
           <button
+            onClick={() => changeView("rivers")}
+            className={`px-2.5 py-1 rounded transition-colors ${activeView === "rivers" ? "bg-blue-600 text-white font-bold animate-pulse shadow-md" : "text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 font-bold"}`}
+          >
+            🌊 Rivers (NER)
+          </button>
+          <button
             onClick={toggleTerrain3D}
             className="px-2.5 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold border border-blue-200"
           >
@@ -600,6 +705,7 @@ export default function LiveRiskMap() {
             className="border border-purple-200 bg-white text-xs font-semibold text-[#1b1b1d] rounded-xl px-2.5 py-2 outline-none cursor-pointer"
           >
             <option value="">Choose Quick Sector...</option>
+            <option value="rivers">🌊 All Rivers (NER Wide View)</option>
             <option value="ranipool">Ranipool Basin (766m)</option>
             <option value="bhusuk">Bhusuk Ridge (1357m)</option>
             <option value="passi">Passi Escarpment (714m)</option>

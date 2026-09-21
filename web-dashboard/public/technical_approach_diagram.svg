@@ -1,0 +1,336 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" style="background:#ffffff; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+  
+  <defs>
+    <!-- Card & Drop Shadows -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Top Header Banner -->
+  <rect x="40" y="30" width="1840" height="100" rx="16" fill="#0f172a" />
+  
+  <!-- Left Badge: Team 404 -->
+  <circle cx="100" cy="80" r="32" fill="#1e293b" stroke="#f97316" stroke-width="3" />
+  <text x="100" y="86" fill="#f97316" font-size="22" font-weight="900" text-anchor="middle">404</text>
+  <text x="150" y="72" fill="#ffffff" font-size="18" font-weight="800">Team: 404 The Optimistics</text>
+  <text x="150" y="94" fill="#94a3b8" font-size="14" font-weight="600">NER-Sentinel Disaster Command Platform</text>
+
+  <!-- Title Center -->
+  <text x="960" y="88" fill="#ffffff" font-size="34" font-weight="900" text-anchor="middle" letter-spacing="2">TECHNICAL APPROACH</text>
+
+  <!-- Right: SIH 2026 -->
+  <text x="1720" y="70" fill="#ffffff" font-size="18" font-weight="900" text-anchor="end">SMART INDIA</text>
+  <text x="1720" y="94" fill="#f97316" font-size="16" font-weight="900" text-anchor="end">HACKATHON 2026</text>
+  <circle cx="1770" cy="80" r="28" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+  <text x="1770" y="88" font-size="24" text-anchor="middle">💡</text>
+
+  <!-- 2. TOP-LEFT: AI / ML & Satellite Intelligence Layer -->
+  <rect x="40" y="150" width="1180" height="230" rx="16" fill="#f8fafc" stroke="#0f172a" stroke-width="3" filter="url(#shadow)" />
+  <text x="70" y="185" fill="#0f172a" font-size="18" font-weight="900">🧠 AI / ML &amp; SATELLITE INTELLIGENCE LAYER</text>
+  <rect x="950" y="165" width="240" height="26" rx="13" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1.5"/>
+  <text x="1070" y="183" fill="#6b21a8" font-size="12" font-weight="800" text-anchor="middle">Grounded Multi-Satellite Engine</text>
+
+  <!-- Row of 6 Sub-Modules inside AI Layer -->
+  <!-- Module 1: NASA SMAP -->
+  <g transform="translate(65, 205)">
+    <rect width="175" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="32" cy="37" r="18" fill="#0b3d91"/>
+    <text x="32" y="42" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">NASA</text>
+    <text x="60" y="32" fill="#0f172a" font-size="14" font-weight="800">NASA SMAP</text>
+    <text x="60" y="52" fill="#64748b" font-size="11" font-weight="600">Soil Moisture (0–5cm)</text>
+  </g>
+
+  <!-- Module 2: NASA SRTM -->
+  <g transform="translate(255, 205)">
+    <rect width="175" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="32" cy="37" r="18" fill="#0b3d91"/>
+    <text x="32" y="42" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">NASA</text>
+    <text x="60" y="32" fill="#0f172a" font-size="14" font-weight="800">NASA SRTM</text>
+    <text x="60" y="52" fill="#64748b" font-size="11" font-weight="600">30m DEM Slope &amp; Elev.</text>
+  </g>
+
+  <!-- Module 3: NASA POWER -->
+  <g transform="translate(445, 205)">
+    <rect width="175" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="32" cy="37" r="18" fill="#0b3d91"/>
+    <text x="32" y="42" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">NASA</text>
+    <text x="60" y="32" fill="#0f172a" font-size="14" font-weight="800">NASA POWER</text>
+    <text x="60" y="52" fill="#64748b" font-size="11" font-weight="600">1D/3D/7D Rain (mm)</text>
+  </g>
+
+  <!-- Module 4: Bayesian Classifier -->
+  <g transform="translate(635, 205)">
+    <rect width="175" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <rect x="14" y="19" width="36" height="36" rx="8" fill="#ffedd5"/>
+    <text x="32" y="43" font-size="18" text-anchor="middle">⚖️</text>
+    <text x="58" y="32" fill="#0f172a" font-size="13" font-weight="800">Bayesian Risk</text>
+    <text x="58" y="52" fill="#64748b" font-size="11" font-weight="600">Hazard Scoring</text>
+  </g>
+
+  <!-- Module 5: Grounded LLM -->
+  <g transform="translate(825, 205)">
+    <rect width="185" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <rect x="14" y="19" width="36" height="36" rx="8" fill="#dcfce7"/>
+    <text x="32" y="43" font-size="18" text-anchor="middle">🤖</text>
+    <text x="58" y="32" fill="#0f172a" font-size="13" font-weight="800">Grounded LLM</text>
+    <text x="58" y="52" fill="#64748b" font-size="11" font-weight="600">Disaster Advisory</text>
+  </g>
+
+  <!-- Module 6: 3D Dijkstra -->
+  <g transform="translate(1025, 205)">
+    <rect width="175" height="75" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <rect x="14" y="19" width="36" height="36" rx="8" fill="#e0f2fe"/>
+    <text x="32" y="43" font-size="18" text-anchor="middle">📍</text>
+    <text x="58" y="32" fill="#0f172a" font-size="13" font-weight="800">3D Dijkstra</text>
+    <text x="58" y="52" fill="#64748b" font-size="11" font-weight="600">400m Buffer Bypass</text>
+  </g>
+
+  <!-- 3. TOP-RIGHT: TECH STACK (Dashed Container) -->
+  <rect x="1250" y="150" width="630" height="230" rx="16" fill="#f8fafc" stroke="#0f172a" stroke-width="3" stroke-dasharray="8 6" filter="url(#shadow)"/>
+  <text x="1565" y="185" fill="#0f172a" font-size="18" font-weight="900" text-anchor="middle">🛠️ TECH STACK</text>
+  
+  <!-- 8 Brand Badges -->
+  <!-- NVIDIA -->
+  <g transform="translate(1275, 210)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#76b900"/>
+    <text x="28" y="35" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">N</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">NVIDIA NIM</text>
+  </g>
+  <!-- Python -->
+  <g transform="translate(1425, 210)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#3776ab"/>
+    <text x="28" y="36" fill="#ffd43b" font-size="14" font-weight="900" text-anchor="middle">🐍</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">Python AI</text>
+  </g>
+  <!-- Spring Boot -->
+  <g transform="translate(1575, 210)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#6db33f"/>
+    <text x="28" y="35" fill="#ffffff" font-size="14" text-anchor="middle">🍃</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">Spring Boot</text>
+  </g>
+  <!-- Next.js -->
+  <g transform="translate(1725, 210)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#000000"/>
+    <text x="28" y="36" fill="#ffffff" font-size="14" font-weight="900" text-anchor="middle">N</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">Next.js 14</text>
+  </g>
+  <!-- TailwindCSS -->
+  <g transform="translate(1275, 290)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#38bdf8"/>
+    <text x="28" y="36" fill="#ffffff" font-size="14" text-anchor="middle">🌊</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">TailwindCSS</text>
+  </g>
+  <!-- PostgreSQL -->
+  <g transform="translate(1425, 290)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#336791"/>
+    <text x="28" y="36" fill="#ffffff" font-size="14" text-anchor="middle">🐘</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">PostgreSQL</text>
+  </g>
+  <!-- Google Maps -->
+  <g transform="translate(1575, 290)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#ea4335"/>
+    <text x="28" y="36" fill="#ffffff" font-size="14" text-anchor="middle">📍</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">Google Maps</text>
+  </g>
+  <!-- Bluetooth Mesh -->
+  <g transform="translate(1725, 290)">
+    <rect width="135" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="28" cy="30" r="14" fill="#0082fc"/>
+    <text x="28" y="36" fill="#ffffff" font-size="14" font-weight="900" text-anchor="middle">ᛒ</text>
+    <text x="50" y="35" fill="#0f172a" font-size="13" font-weight="800">BLE Mesh</text>
+  </g>
+
+  <!-- 4. MIDDLE-LEFT: Database Layer -->
+  <rect x="40" y="410" width="370" height="310" rx="16" fill="#f8fafc" stroke="#0f172a" stroke-width="3" filter="url(#shadow)"/>
+  <text x="70" y="445" fill="#0f172a" font-size="18" font-weight="900">🗄️ DATABASE LAYER</text>
+  
+  <g transform="translate(65, 470)">
+    <rect width="320" height="65" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="2" />
+    <circle cx="35" cy="32" r="18" fill="#336791"/>
+    <text x="35" y="38" font-size="16" text-anchor="middle">🐘</text>
+    <text x="70" y="32" fill="#1e3a8a" font-size="15" font-weight="800">PostgreSQL Relational DB</text>
+    <text x="70" y="50" fill="#3b82f6" font-size="12" font-weight="600">Disaster Telemetry &amp; Logs</text>
+  </g>
+  <g transform="translate(65, 550)">
+    <rect width="320" height="65" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="2" />
+    <circle cx="35" cy="32" r="18" fill="#0284c7"/>
+    <text x="35" y="38" font-size="16" text-anchor="middle">📦</text>
+    <text x="70" y="32" fill="#1e3a8a" font-size="15" font-weight="800">Spatial H2 Database</text>
+    <text x="70" y="50" fill="#3b82f6" font-size="12" font-weight="600">In-Memory Zone Cache</text>
+  </g>
+  <g transform="translate(65, 630)">
+    <rect width="320" height="65" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="2" />
+    <circle cx="35" cy="32" r="18" fill="#3ecf8e"/>
+    <text x="35" y="38" font-size="16" text-anchor="middle">⚡</text>
+    <text x="70" y="32" fill="#1e3a8a" font-size="15" font-weight="800">Supabase Image Storage</text>
+    <text x="70" y="50" fill="#3b82f6" font-size="12" font-weight="600">Geo-Tagged Hazard Photos</text>
+  </g>
+
+  <!-- 5. MIDDLE-CENTER: Backend Layer & AI Integration (THE CORE) -->
+  <rect x="440" y="410" width="780" height="310" rx="16" fill="#ffffff" stroke="#0f172a" stroke-width="3" filter="url(#shadow)"/>
+  <text x="830" y="445" fill="#0f172a" font-size="18" font-weight="900" text-anchor="middle">⚙️ BACKEND LAYER &amp; AI INTEGRATION</text>
+
+  <!-- Core Microservices Grid (4 Big Blocks) -->
+  <!-- Spring Boot Core (WITH OFFICIAL GREEN LEAF) -->
+  <g transform="translate(470, 470)">
+    <rect width="345" height="105" rx="14" fill="#ecfdf5" stroke="#10b981" stroke-width="2.5" />
+    <!-- Leaf Circle -->
+    <circle cx="50" cy="52" r="26" fill="#6db33f"/>
+    <!-- SVG Leaf Icon -->
+    <path d="M50 34 C40 34 32 42 32 52 C32 62 40 70 50 70 C60 70 68 62 68 52 C68 42 60 34 50 34 Z M52 57 L52 55 C52 53 50 51 48 51 L46 51 L46 49 L48 49 C50 49 52 47 52 45 L52 41 C57 42 61 46 61 52 C61 55 59 58 57 60 A14 14 0 0 1 52 57 Z" fill="#ffffff"/>
+    <text x="90" y="44" fill="#064e3b" font-size="18" font-weight="900">Spring Boot Orchestrator</text>
+    <text x="90" y="66" fill="#047857" font-size="14" font-weight="800">Port 8080 (REST Service)</text>
+    <text x="90" y="86" fill="#64748b" font-size="12" font-weight="600">GET /api/v1/zones | POST /reports</text>
+  </g>
+
+  <!-- REST API Gateway -->
+  <g transform="translate(845, 470)">
+    <rect width="345" height="105" rx="14" fill="#eff6ff" stroke="#3b82f6" stroke-width="2.5" />
+    <circle cx="50" cy="52" r="26" fill="#2563eb"/>
+    <text x="50" y="60" fill="#ffffff" font-size="22" text-anchor="middle">🔀</text>
+    <text x="90" y="44" fill="#1e3a8a" font-size="18" font-weight="900">REST API Gateway</text>
+    <text x="90" y="66" fill="#1d4ed8" font-size="14" font-weight="800">JSON Contracts &amp; Security</text>
+    <text x="90" y="86" fill="#64748b" font-size="12" font-weight="600">Microservice Proxy &amp; CORS</text>
+  </g>
+
+  <!-- Python Multi-Satellite Engine (WITH SNAKE LOGO) -->
+  <g transform="translate(470, 595)">
+    <rect width="345" height="105" rx="14" fill="#fefce8" stroke="#eab308" stroke-width="2.5" />
+    <circle cx="50" cy="52" r="26" fill="#3776ab"/>
+    <text x="50" y="60" fill="#ffd43b" font-size="24" text-anchor="middle">🐍</text>
+    <text x="90" y="44" fill="#713f12" font-size="18" font-weight="900">Python Multi-Satellite AI</text>
+    <text x="90" y="66" fill="#854d0e" font-size="14" font-weight="800">Port 8000 (NASA ML Engine)</text>
+    <text x="90" y="86" fill="#64748b" font-size="12" font-weight="600">POST /api/v1/analyze (Risk Model)</text>
+  </g>
+
+  <!-- NVIDIA NIM Navigation Assistant (WITH NVIDIA GREEN LOGO) -->
+  <g transform="translate(845, 595)">
+    <rect width="345" height="105" rx="14" fill="#f0fdf4" stroke="#22c55e" stroke-width="2.5" />
+    <circle cx="50" cy="52" r="26" fill="#76b900"/>
+    <text x="50" y="60" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle">N</text>
+    <text x="90" y="44" fill="#14532d" font-size="18" font-weight="900">NVIDIA NIM Navigation Bot</text>
+    <text x="90" y="66" fill="#15803d" font-size="14" font-weight="800">Port 5001 (Llama-3.1 8B)</text>
+    <text x="90" y="86" fill="#64748b" font-size="12" font-weight="600">In-App Command Assistant</text>
+  </g>
+
+  <!-- 6. MIDDLE-RIGHT: Ingestion Layer -->
+  <rect x="1250" y="410" width="630" height="310" rx="16" fill="#f8fafc" stroke="#0f172a" stroke-width="3" filter="url(#shadow)"/>
+  <text x="1565" y="445" fill="#0f172a" font-size="18" font-weight="900" text-anchor="middle">📡 INGESTION LAYER</text>
+
+  <g transform="translate(1275, 470)">
+    <rect width="580" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+    <circle cx="28" cy="25" r="14" fill="#0b3d91"/>
+    <text x="28" y="29" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">NASA</text>
+    <text x="55" y="32" fill="#1e3a8a" font-size="15" font-weight="800">NASA Satellite APIs (Automated Telemetry Polling)</text>
+  </g>
+  <g transform="translate(1275, 530)">
+    <rect width="580" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+    <circle cx="28" cy="25" r="14" fill="#1d4ed8"/>
+    <text x="28" y="31" fill="#ffffff" font-size="14" text-anchor="middle">📱</text>
+    <text x="55" y="32" fill="#1e3a8a" font-size="15" font-weight="800">Citizen Mobile Reports (GPS Coordinates + Photos)</text>
+  </g>
+  <g transform="translate(1275, 590)">
+    <rect width="580" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+    <circle cx="28" cy="25" r="14" fill="#0082fc"/>
+    <text x="28" y="31" fill="#ffffff" font-size="14" font-weight="900" text-anchor="middle">ᛒ</text>
+    <text x="55" y="32" fill="#1e3a8a" font-size="15" font-weight="800">Bluetooth Mesh &amp; LoRa Peer-to-Peer Relay (No-Net)</text>
+  </g>
+  <g transform="translate(1275, 650)">
+    <rect width="580" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+    <circle cx="28" cy="25" r="14" fill="#475569"/>
+    <text x="28" y="31" fill="#ffffff" font-size="14" text-anchor="middle">☁️</text>
+    <text x="55" y="32" fill="#1e3a8a" font-size="15" font-weight="800">Manual Field Incident &amp; Ground Truth Uploads</text>
+  </g>
+
+  <!-- 7. BOTTOM-LEFT: Users & Interface Layer -->
+  <rect x="40" y="745" width="1180" height="230" rx="16" fill="#ffffff" stroke="#0f172a" stroke-width="3" filter="url(#shadow)"/>
+  
+  <!-- User Flow -->
+  <g transform="translate(65, 770)">
+    <circle cx="45" cy="50" r="28" fill="#0f172a"/>
+    <text x="45" y="58" fill="#ffffff" font-size="24" text-anchor="middle">👥</text>
+    <text x="45" y="95" fill="#0f172a" font-size="13" font-weight="900" text-anchor="middle">Commanders / Users</text>
+
+    <!-- Arrow 1 -->
+    <path d="M90 50 L130 50" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="110" y="40" fill="#94a3b8" font-size="16" font-weight="900" text-anchor="middle">→</text>
+
+    <!-- Auth Box -->
+    <rect x="145" y="15" width="125" height="70" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="207" y="44" font-size="18" text-anchor="middle">🛡️</text>
+    <text x="207" y="68" fill="#0f172a" font-size="12" font-weight="900" text-anchor="middle">Auth &amp; RBAC</text>
+
+    <!-- Arrow 2 -->
+    <text x="290" y="56" fill="#94a3b8" font-size="20" font-weight="900">→</text>
+
+    <!-- Interface Options (4 Cards) -->
+    <g transform="translate(320, 0)">
+      <!-- Next.js 3D Web Dashboard -->
+      <rect x="0" y="10" width="370" height="75" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+      <circle cx="35" cy="47" r="20" fill="#000000"/>
+      <text x="35" y="54" fill="#ffffff" font-size="18" font-weight="900" text-anchor="middle">N</text>
+      <text x="70" y="42" fill="#0f172a" font-size="15" font-weight="900">Next.js 14 3D Command Center</text>
+      <text x="70" y="62" fill="#64748b" font-size="12" font-weight="600">MapLibre WebGL 3D Elevation Terrain</text>
+
+      <!-- Mobile PWA -->
+      <rect x="390" y="10" width="370" height="75" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+      <circle cx="35" cy="47" r="20" fill="#2563eb"/>
+      <text x="35" y="55" fill="#ffffff" font-size="18" text-anchor="middle">📱</text>
+      <text x="70" y="42" fill="#0f172a" font-size="15" font-weight="900">Mobile PWA &amp; Citizen App</text>
+      <text x="70" y="62" fill="#64748b" font-size="12" font-weight="600">Google Maps 2D Live Incident Navigation</text>
+    </g>
+  </g>
+
+  <!-- 8. BOTTOM-RIGHT: Infrastructure Layer (Dashed Container) -->
+  <rect x="1250" y="745" width="630" height="230" rx="16" fill="#f8fafc" stroke="#0f172a" stroke-width="3" stroke-dasharray="8 6" filter="url(#shadow)"/>
+  <text x="1565" y="780" fill="#0f172a" font-size="18" font-weight="900" text-anchor="middle">☁️ INFRASTRUCTURE LAYER</text>
+
+  <!-- 4 Infrastructure Badges -->
+  <!-- Docker -->
+  <g transform="translate(1275, 820)">
+    <rect width="135" height="110" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <circle cx="67" cy="45" r="22" fill="#2496ed"/>
+    <text x="67" y="52" fill="#ffffff" font-size="20" text-anchor="middle">🐳</text>
+    <text x="67" y="85" fill="#0f172a" font-size="14" font-weight="900" text-anchor="middle">Docker</text>
+    <text x="67" y="100" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">Containers</text>
+  </g>
+  <!-- Vercel -->
+  <g transform="translate(1425, 820)">
+    <rect width="135" height="110" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <circle cx="67" cy="45" r="22" fill="#000000"/>
+    <text x="67" y="53" fill="#ffffff" font-size="20" font-weight="900" text-anchor="middle">▲</text>
+    <text x="67" y="85" fill="#0f172a" font-size="14" font-weight="900" text-anchor="middle">Vercel</text>
+    <text x="67" y="100" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">Frontend Edge</text>
+  </g>
+  <!-- Supabase -->
+  <g transform="translate(1575, 820)">
+    <rect width="135" height="110" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <circle cx="67" cy="45" r="22" fill="#3ecf8e"/>
+    <text x="67" y="53" fill="#ffffff" font-size="20" text-anchor="middle">⚡</text>
+    <text x="67" y="85" fill="#0f172a" font-size="14" font-weight="900" text-anchor="middle">Supabase</text>
+    <text x="67" y="100" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">Cloud Storage</text>
+  </g>
+  <!-- Microservices -->
+  <g transform="translate(1725, 820)">
+    <rect width="135" height="110" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <circle cx="67" cy="45" r="22" fill="#7c3aed"/>
+    <text x="67" y="53" fill="#ffffff" font-size="20" text-anchor="middle">⚙️</text>
+    <text x="67" y="85" fill="#0f172a" font-size="14" font-weight="900" text-anchor="middle">Microservices</text>
+    <text x="67" y="100" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">Local Network</text>
+  </g>
+
+  <!-- 9. BOTTOM FOOTER BANNER -->
+  <rect x="40" y="1000" width="1840" height="50" rx="12" fill="#1d4ed8"/>
+  <text x="70" y="1032" fill="#ffffff" font-size="16" font-weight="800">🔗 Prototype Live Link / GitHub: <tspan font-family="monospace" text-decoration="underline">https://github.com/naveenmohanka/NER-Sentinel</tspan></text>
+  <rect x="1600" y="1010" width="260" height="30" rx="15" fill="#ffffff" fill-opacity="0.2"/>
+  <text x="1730" y="1030" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle" font-family="monospace">SIH-2026-GRAND-FINALE</text>
+
+</svg>

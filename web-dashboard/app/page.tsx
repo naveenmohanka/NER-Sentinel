@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
 import LiveRiskMap from "@/components/LiveRiskMap";
 import ActiveIncidentsLog from "@/components/ActiveIncidentsLog";
+import InSARMonitor from "@/components/InSARMonitor";
 
 export default function DashboardPage() {
   return (
@@ -20,6 +21,9 @@ export default function DashboardPage() {
         <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
           {/* Live Risk & Connectivity Map */}
           <LiveRiskMap />
+
+          {/* InSAR Satellite Ground Deformation Monitor */}
+          <InSARMonitor />
 
           {/* Active Incidents Log Section */}
           <ActiveIncidentsLog />

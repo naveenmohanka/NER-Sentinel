@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1300">
+<title>Proposed Solution - SIH 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #e5e7eb;
+    color: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Download Button */
+  .download-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .download-btn {
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .download-btn:hover { transform: scale(1.03); }
+  .btn-png {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+  }
+  .btn-pdf {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+  }
+  .btn-info {
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 12px;
+    cursor: default;
+  }
+  .btn-info:hover { transform: none; }
+
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    /* Sharp rendering */
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .top-bar {
+    height: 6px;
+    background: linear-gradient(to right, #1a3a6b, #2563eb, #1a3a6b);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 28px 6px;
+  }
+
+  .team-badge {
+    width: 65px;
+    height: 65px;
+    border: 2px solid #7c3aed;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #7c3aed;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+    flex-shrink: 0;
+  }
+
+  .idea-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-align: center;
+    flex: 1;
+    font-style: italic;
+    padding: 0 16px;
+  }
+
+  .sih-badge {
+    text-align: center;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+  }
+  .sih-icon { font-size: 20px; }
+  .sih-text { font-size: 8.5px; font-weight: 700; color: #1a3a6b; line-height: 1.3; }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1a3a6b;
+    padding: 2px 28px 8px;
+    text-decoration: underline;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    padding: 0 28px 12px;
+  }
+
+  .column { padding: 0; }
+
+  .col-header {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #1a3a6b;
+    text-decoration: underline;
+    margin-bottom: 7px;
+  }
+
+  .column ul {
+    list-style: disc;
+    padding-left: 14px;
+    margin: 0;
+  }
+
+  .column li {
+    font-size: 9.2px;
+    color: #2d2d2d;
+    margin-bottom: 5.5px;
+    line-height: 1.42;
+    letter-spacing: -0.01em;
+  }
+
+  .column li strong {
+    color: #1a1a2e;
+    font-weight: 700;
+  }
+
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background: linear-gradient(to right, #1a3a6b, #2563eb, #1a3a6b);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 20px;
+  }
+  .bottom-bar span {
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .slide { border: none; box-shadow: none; margin: 0; }
+    .download-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Download Buttons -->
+<div class="download-bar">
+  <button class="download-btn btn-png" onclick="downloadAsPNG()">📥 Download as PNG (High-Res)</button>
+  <button class="download-btn btn-pdf" onclick="window.print()">📄 Download as PDF (Ctrl+P)</button>
+  <button class="download-btn btn-info">💡 PNG = sharp image for PPT &nbsp;|&nbsp; PDF = print quality</button>
+</div>
+
+<!-- Slide -->
+<div class="slide" id="slide">
+  <div class="top-bar"></div>
+
+  <div class="header">
+    <div class="team-badge">Your<br>Team<br>Name</div>
+    <div class="idea-title">NER-Sentinel: Multi-Satellite AI Disaster Intelligence Platform</div>
+    <div class="sih-badge">
+      <div class="sih-icon">🧠</div>
+      <div class="sih-text">SMART INDIA<br>HACKATHON<br>2026</div>
+    </div>
+  </div>
+
+  <div class="section-title">❖ Proposed Solution (Describe your Idea/Solution/Prototype)</div>
+
+  <div class="columns">
+    
+    <!-- Column 1 -->
+    <div class="column">
+      <div class="col-header">Detailed Explanation of the Solution</div>
+      <ul>
+        <li>Real-time <strong>3D GIS dashboard</strong> with live risk heatmaps (RED/ORANGE/YELLOW/GREEN) across all <strong>8 NER states</strong>.</li>
+        <li>AI/ML engine fuses <strong>4 satellites</strong> (NASA SMAP, SRTM DEM, NASA POWER, Open-Meteo) for coordinate-level flood/landslide probability, e.g. <strong>"65% flood, 44% landslide @ 27.33°N, 88.60°E"</strong>.</li>
+        <li><strong>Sentinel-1 InSAR</strong> detects mm-level ground deformation <strong>weeks before</strong> a landslide; 6 monitoring zones tracked continuously.</li>
+        <li><strong>Digital Twin:</strong> 3D terrain simulates live flood zones, "what-if" rainfall scenarios, rescue team/shelter positions.</li>
+        <li>Citizens/officials submit geo-tagged photo/video reports → <strong>ML recalibrates within seconds</strong> (two-way loop, unlike one-way SACHET alerts).</li>
+        <li><strong>Dijkstra-based SAFE evacuation routing</strong> auto-avoids active hazards, reroutes to nearest shelter camp.</li>
+        <li>Multilingual <strong>(7 NER languages)</strong> SMS/IVR + village-warden siren network covers offline, non-smartphone users.</li>
+        <li><strong>Open REST APIs</strong> (/predict, /api/v1/alerts, /api/v1/insar) let any app, NGO or govt portal integrate directly.</li>
+      </ul>
+    </div>
+
+    <!-- Column 2 -->
+    <div class="column">
+      <div class="col-header">How It Addresses the Problem</div>
+      <ul>
+        <li>Static, yearly risk maps → <strong>real-time 3D map</strong> refreshing every few seconds.</li>
+        <li>Vague regional warnings → <strong>GPS coordinate-level probability</strong> with AI-explained precautions.</li>
+        <li>Fragmented data (GSI, IMD, CWC siloed) → <strong>single fused pipeline</strong> from 4 satellites + InSAR.</li>
+        <li>No citizen ground-truth → <strong>field reports feed back into ML risk calculation</strong>, improving accuracy over time.</li>
+        <li>Delayed manual reporting → <strong>auto-alerts (75% threshold)</strong> via dashboard, push, SMS/IVR, cutting emergency response time.</li>
+        <li>No safe evacuation guidance → <strong>Dijkstra algorithm calculates safest route</strong> avoiding active hazard zones in real-time.</li>
+        <li>Closed, siloed systems → <strong>Open API</strong> (read = public, write = authenticated, admin = govt-only) so any developer/NGO builds on it instantly.</li>
+        <li>Directly advances <strong>SDG 11</strong> (Resilient Cities), <strong>SDG 13</strong> (Climate Action), <strong>SDG 9</strong> (Infrastructure) and <strong>SDG 17</strong> (Partnerships).</li>
+      </ul>
+    </div>
+
+    <!-- Column 3 -->
+    <div class="column">
+      <div class="col-header">Innovation & Uniqueness</div>
+      <ul>
+        <li><strong>Explainable AI</strong> (NVIDIA NIM LLM) converts raw satellite telemetry into plain-language reasoning non-technical officials can act on immediately.</li>
+        <li>Only Indian platform fusing <strong>4 satellite sources + InSAR</strong> into one citizen-accessible prediction engine.</li>
+        <li><strong>Bidirectional Intelligence Loop:</strong> citizen reports → ML recalibrates → map updates → system gets smarter with every report (vs. one-way SACHET).</li>
+        <li><strong>Coordinate-level hyper-local prediction</strong>, not district/state-level generic warnings.</li>
+        <li><strong>Dynamic hazard-aware Dijkstra</strong> evacuation routing — no existing Indian system offers real-time safest-path rerouting.</li>
+        <li><strong>Open Infrastructure model</strong> (like Google Maps API) vs closed systems (SACHET, CWC) — any app/IoT device can integrate via REST API.</li>
+        <li><strong>Built-in security:</strong> rate limiting, GPS+photo report verification, location anonymization, tiered API quotas.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="bottom-bar"><span>2</span></div>
+</div>
+
+<script>
+function downloadAsPNG() {
+  const slide = document.getElementById('slide');
+  html2canvas(slide, {
+    scale: 3,  // 3x resolution = super sharp!
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    logging: false,
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'NER-Sentinel_Proposed_Solution_SIH2026.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>

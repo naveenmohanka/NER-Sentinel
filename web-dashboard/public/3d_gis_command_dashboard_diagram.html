@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slide 4: 3D GIS & Command Dashboard — NER-Sentinel / resQVerse</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-900 flex items-center justify-center min-h-screen p-4 select-none">
+
+  <!-- Main Card Container matching Slide 4 style -->
+  <div class="w-full max-w-[850px] bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-indigo-600 flex flex-col gap-6 relative overflow-hidden">
+    
+    <!-- Top Header Banner -->
+    <div class="flex items-center gap-4 border-b-2 border-slate-100 pb-4">
+      <div class="w-14 h-14 rounded-full bg-indigo-900 text-white flex items-center justify-center font-black text-2xl shadow-md border-2 border-indigo-500 shrink-0">
+        4
+      </div>
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight flex items-center gap-2">
+          3D GIS & COMMAND DASHBOARD
+        </h1>
+        <p class="text-indigo-600 font-bold text-sm tracking-wide">
+          Visualize • Analyze • Plan &nbsp;|&nbsp; <span class="text-slate-500 font-semibold">NER-Sentinel Government Disaster Command Center</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Top Two Columns -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      
+      <!-- Box 1: 3D Risk Map Generation -->
+      <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:border-indigo-400 transition">
+        <div>
+          <div class="flex items-center gap-2.5 mb-1.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <h2 class="font-extrabold text-base text-slate-900">3D Risk Map Generation</h2>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed mb-4">
+            Combine risk layers <b>(NASA SRTM DEM + IMD Rainfall + SMAP Soil Moisture + Sentinel-1 InSAR)</b> to create hyper-local 3D terrain risk visualization.
+          </p>
+
+          <!-- Layers & 3D Mountain Fusion Visual -->
+          <div class="grid grid-cols-12 gap-3 items-center bg-white p-3 rounded-xl border border-slate-200">
+            <!-- Left 3 Layers -->
+            <div class="col-span-5 flex flex-col gap-2">
+              <div class="bg-emerald-50 border border-emerald-300 rounded-lg p-1.5 flex items-center gap-2 shadow-xs">
+                <i class="fa-solid fa-mountain text-emerald-600 text-xs"></i>
+                <div class="text-[10px] font-bold text-slate-800">Terrain (SRTM DEM)</div>
+              </div>
+              <div class="bg-amber-50 border border-amber-300 rounded-lg p-1.5 flex items-center gap-2 shadow-xs">
+                <i class="fa-solid fa-fire-flame-curved text-amber-600 text-xs"></i>
+                <div class="text-[10px] font-bold text-slate-800">Risk Scores (ML)</div>
+              </div>
+              <div class="bg-blue-50 border border-blue-300 rounded-lg p-1.5 flex items-center gap-2 shadow-xs">
+                <i class="fa-solid fa-satellite text-blue-600 text-xs"></i>
+                <div class="text-[10px] font-bold text-slate-800">Satellite Imagery</div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="col-span-2 flex justify-center text-indigo-400 text-xl font-bold">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+
+            <!-- Right 3D Mountain Heatmap Badge -->
+            <div class="col-span-5 flex flex-col items-center justify-center text-center p-2 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 via-amber-500 to-red-500 flex items-center justify-center text-white shadow-md mb-1.5">
+                <i class="fa-solid fa-mountain-sun text-lg"></i>
+              </div>
+              <span class="text-[11px] font-black text-indigo-950 uppercase tracking-wide">3D Risk Map</span>
+              <span class="text-[8px] font-semibold text-slate-500">MapLibre GL + Deck.gl</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-[10px] text-slate-500 font-medium pt-2 border-t border-slate-200">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> CRITICAL: Ranipool Basin</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> HIGH: Teesta Valley</span>
+        </div>
+      </div>
+
+      <!-- Box 2: Incidents & Road Status -->
+      <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:border-indigo-400 transition">
+        <div>
+          <div class="flex items-center gap-2.5 mb-1.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <h2 class="font-extrabold text-base text-slate-900">Incidents & Road Status</h2>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed mb-3">
+            Real-time multi-source ground incident reports and critical transport infrastructure tracking.
+          </p>
+
+          <!-- 4 Input Feeds -->
+          <div class="space-y-1.5 bg-white p-2.5 rounded-xl border border-slate-200 mb-3 text-[11px]">
+            <div class="flex items-center gap-2.5 text-slate-700">
+              <i class="fa-solid fa-mobile-screen text-indigo-600 w-4 text-center"></i>
+              <span><b>Citizen Reports</b> (geotagged photos, GPS auto-lock, hazard type)</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-slate-700">
+              <i class="fa-solid fa-road text-amber-600 w-4 text-center"></i>
+              <span><b>Official DDMA Data</b> (NH-10 blocked corridors, highway closures)</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-slate-700">
+              <i class="fa-solid fa-tower-broadcast text-blue-600 w-4 text-center"></i>
+              <span><b>Live Sensor Feeds</b> (CWC river level gauges, AWS rainfall)</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-slate-700">
+              <i class="fa-solid fa-microchip text-purple-600 w-4 text-center"></i>
+              <span><b>AI Processing</b> (FastAPI + Bayes validation & ground-truth)</span>
+            </div>
+          </div>
+
+          <!-- Status Tags -->
+          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Live Incidents & Road Status:</div>
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-1.5 text-red-700 font-bold text-[9.5px]">
+              <i class="fa-solid fa-triangle-exclamation text-xs block mb-0.5"></i> Landslide
+            </div>
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-1.5 text-orange-700 font-bold text-[9.5px]">
+              <i class="fa-solid fa-ban text-xs block mb-0.5"></i> Road Blocked
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-1.5 text-blue-700 font-bold text-[9.5px]">
+              <i class="fa-solid fa-bridge text-xs block mb-0.5"></i> Bridge Status
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-1.5 text-emerald-700 font-bold text-[9.5px]">
+              <i class="fa-solid fa-campground text-xs block mb-0.5"></i> Shelters
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Downward Flow Indicators -->
+    <div class="flex justify-around items-center -my-2 text-indigo-500 text-lg font-black">
+      <div class="flex items-center gap-2 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-200 text-xs">
+        <i class="fa-solid fa-arrow-down"></i> Fused into Dijkstra Dynamic Weight Graph <i class="fa-solid fa-arrow-down"></i>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Safe Evacuation Route Planning (Dijkstra Algorithm) -->
+    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 shadow-sm hover:border-indigo-400 transition">
+      <div class="flex items-center gap-2.5 mb-1.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base">
+          <i class="fa-solid fa-route"></i>
+        </div>
+        <h2 class="font-extrabold text-base text-slate-900">Safe Evacuation Route Planning (Dijkstra Algorithm)</h2>
+      </div>
+      <p class="text-[11px] text-slate-600 leading-relaxed mb-4">
+        Find safest and shortest route from user GPS location to nearest relief shelter using Dijkstra's algorithm 
+        <b>(Edge Cost = Distance × (1 + Risk × 12) + Block Penalty, avoiding high-risk rivers & landslide blocks)</b>.
+      </p>
+
+      <!-- 4-Step Horizontal Flowchart -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 relative">
+        
+        <!-- Step 1: User Location -->
+        <div class="bg-white border-2 border-red-200 rounded-xl p-3 flex flex-col items-center text-center shadow-xs">
+          <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-base font-black mb-2 shadow-xs">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <h4 class="font-extrabold text-xs text-slate-900">User Location</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">(or affected area: Gangtok Sector)</p>
+        </div>
+
+        <!-- Step 2: Graph Network -->
+        <div class="bg-white border-2 border-blue-200 rounded-xl p-3 flex flex-col items-center text-center shadow-xs">
+          <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-base font-black mb-2 shadow-xs">
+            <i class="fa-solid fa-circle-nodes"></i>
+          </div>
+          <h4 class="font-extrabold text-xs text-slate-900">Graph Network</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">(Roads with dynamic risk weight)</p>
+        </div>
+
+        <!-- Step 3: Dijkstra Algorithm -->
+        <div class="bg-white border-2 border-indigo-200 rounded-xl p-3 flex flex-col items-center text-center shadow-xs">
+          <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-base font-black mb-2 shadow-xs">
+            <i class="fa-solid fa-diagram-project"></i>
+          </div>
+          <h4 class="font-extrabold text-xs text-slate-900">Dijkstra Algorithm</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">(Find safest minimum-cost path)</p>
+        </div>
+
+        <!-- Step 4: Safe Route -->
+        <div class="bg-white border-2 border-emerald-300 rounded-xl p-3 flex flex-col items-center text-center shadow-xs">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-base font-black mb-2 shadow-xs">
+            <i class="fa-solid fa-flag-checkered"></i>
+          </div>
+          <h4 class="font-extrabold text-xs text-slate-900">Safe Route</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">(To Camp Gangtok: 450/600 Beds)</p>
+        </div>
+
+      </div>
+
+      <!-- Bottom Formula & Operational Badge -->
+      <div class="mt-3.5 pt-2.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[10.5px] text-slate-600 gap-2">
+        <div>
+          <b>Mathematical Objective:</b> <code class="bg-slate-200 px-2 py-0.5 rounded text-indigo-900 font-mono text-[10px]">Min Σ [Distance_i × (1.0 + Risk_i × 12.0) + Penalty_Blocked]</code>
+        </div>
+        <div class="flex items-center gap-1.5 text-emerald-700 font-bold">
+          <i class="fa-solid fa-circle-check"></i> Live in NER-Sentinel: <code>/api/v1/safe-route</code>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

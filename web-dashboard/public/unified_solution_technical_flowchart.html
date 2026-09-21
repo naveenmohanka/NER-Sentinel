@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NER-Sentinel — Unified Solution & Architecture Flowchart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .step-badge {
+      background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-900 flex items-center justify-center min-h-screen p-3 select-none">
+
+  <!-- 16:9 Aspect Ratio Master Slide -->
+  <div class="w-full max-w-[1520px] aspect-[16/9] bg-white rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col justify-between border-[3px] border-slate-900 overflow-hidden relative">
+
+    <!-- ═══ TOP HEADER ═══ -->
+    <div class="flex items-center justify-between pb-2 border-b-2 border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-slate-950 text-white flex flex-col items-center justify-center border-2 border-orange-500 shadow-md">
+          <span class="font-black text-xs leading-none text-orange-400">404</span>
+          <span class="text-[6px] font-bold tracking-widest text-slate-300 uppercase">TEAM</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-black text-sm text-slate-950 uppercase tracking-tight">NER-SENTINEL</span>
+            <span class="text-[9px] bg-indigo-100 text-indigo-900 font-bold px-1.5 py-0.2 rounded border border-indigo-300">resQVerse</span>
+          </div>
+          <p class="text-[10px] text-slate-600 font-semibold">Predict • Evacuate • Respond — AI Disaster Intelligence</p>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <h1 class="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-tight">
+          END-TO-END SOLUTION &amp; TECHNICAL FLOW
+        </h1>
+        <p class="text-[10px] text-indigo-700 font-bold tracking-wide">
+          Multi-Source Sensing ➔ Dynamic AI Routing ➔ 3D Command ➔ Mesh Alerts
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 text-right">
+        <div>
+          <h4 class="font-black text-xs text-slate-950">SMART INDIA HACKATHON</h4>
+          <p class="text-[10px] font-black text-orange-600">GRAND FINALE 2026</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center p-1">
+          <svg viewBox="0 0 24 24" class="w-full h-full" fill="none"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z" fill="#f97316" stroke="#ea580c" stroke-width="1.5"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN 5-STAGE CORE FLOW GRID ═══ -->
+    <div class="grid grid-cols-5 gap-2.5 my-2 flex-1 items-stretch">
+
+      <!-- ── STAGE 1: MULTI-SOURCE DATA INPUT ── -->
+      <div class="flex flex-col rounded-xl border-2 border-blue-400 bg-blue-50/70 overflow-hidden shadow-xs">
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-2.5 py-1.5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-white/20 border border-white/50 flex items-center justify-center font-black text-xs">1</div>
+          <div>
+            <h3 class="font-extrabold text-[11px] uppercase tracking-wide leading-tight">Data Ingestion</h3>
+            <p class="text-[8px] text-blue-200 font-medium">Diverse Situational Sensing</p>
+          </div>
+        </div>
+
+        <div class="p-2 flex-1 flex flex-col justify-between space-y-1 text-[9px]">
+          <div class="bg-white border border-blue-200 rounded-lg p-1.5 flex items-center gap-2 shadow-2xs">
+            <span class="w-5 h-5 rounded-full bg-blue-950 text-white font-black text-[7px] flex items-center justify-center shrink-0">NASA</span>
+            <div class="leading-tight">
+              <span class="font-bold text-slate-900">Satellite Data</span>
+              <p class="text-[7.5px] text-slate-500 font-semibold">SMAP, SRTM 30m, InSAR</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-blue-200 rounded-lg p-1.5 flex items-center gap-2 shadow-2xs">
+            <div class="w-5 h-5 rounded bg-sky-500 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-cloud-rain"></i></div>
+            <div class="leading-tight">
+              <span class="font-bold text-slate-900">Weather Feeds</span>
+              <p class="text-[7.5px] text-slate-500 font-semibold">IMD &amp; Open-Meteo Real-time</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-blue-200 rounded-lg p-1.5 flex items-center gap-2 shadow-2xs">
+            <div class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-mountain"></i></div>
+            <div class="leading-tight">
+              <span class="font-bold text-slate-900">Terrain &amp; River</span>
+              <p class="text-[7.5px] text-slate-500 font-semibold">CWC Gauges, Slope, DEM</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-blue-200 rounded-lg p-1.5 flex items-center gap-2 shadow-2xs">
+            <div class="w-5 h-5 rounded bg-indigo-600 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-users"></i></div>
+            <div class="leading-tight">
+              <span class="font-bold text-slate-900">Citizen Reports</span>
+              <p class="text-[7.5px] text-slate-500 font-semibold">Geotagged Photos &amp; Crowdsource</p>
+            </div>
+          </div>
+
+          <div class="bg-blue-100/80 rounded-md p-1 border border-blue-300 text-center text-[8px] font-bold text-blue-950">
+            <i class="fa-solid fa-satellite-dish mr-1 text-blue-700"></i> Unified Multi-Modal Input
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 2: DATA PROCESSING & FUSION ── -->
+      <div class="flex flex-col rounded-xl border-2 border-teal-400 bg-teal-50/70 overflow-hidden shadow-xs">
+        <div class="bg-gradient-to-r from-teal-700 to-emerald-800 text-white px-2.5 py-1.5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-white/20 border border-white/50 flex items-center justify-center font-black text-xs">2</div>
+          <div>
+            <h3 class="font-extrabold text-[11px] uppercase tracking-wide leading-tight">Data Fusion</h3>
+            <p class="text-[8px] text-teal-200 font-medium">Cleaning &amp; Feature Engine</p>
+          </div>
+        </div>
+
+        <div class="p-2 flex-1 flex flex-col justify-between space-y-1 text-[9px]">
+          <div class="bg-white border border-teal-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-broom text-teal-600"></i> Cleaning &amp; Standardize
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Outlier filtering, null impute, 30m uniform geo-grid</p>
+          </div>
+
+          <div class="flex justify-center text-teal-600"><i class="fa-solid fa-arrow-down text-[10px]"></i></div>
+
+          <div class="bg-white border border-teal-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-layer-group text-teal-600"></i> Multi-Source Fusion
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Raster + Vector + Sensor IoT overlay at coordinate level</p>
+          </div>
+
+          <div class="flex justify-center text-teal-600"><i class="fa-solid fa-arrow-down text-[10px]"></i></div>
+
+          <div class="bg-white border border-teal-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-1">
+              <i class="fa-solid fa-wand-magic-sparkles text-teal-600"></i> 9 Extracted Features
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[7px] font-bold">
+              <span class="bg-teal-50 text-teal-800 px-1 py-0.5 rounded border border-teal-200">🌧️ 1/3/7d Rain</span>
+              <span class="bg-teal-50 text-teal-800 px-1 py-0.5 rounded border border-teal-200">🌱 Soil Saturation</span>
+              <span class="bg-teal-50 text-teal-800 px-1 py-0.5 rounded border border-teal-200">⛰️ Slope/Aspect</span>
+              <span class="bg-teal-50 text-teal-800 px-1 py-0.5 rounded border border-teal-200">📡 InSAR Velocity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 3: AI / ML PREDICTION ENGINE ── -->
+      <div class="flex flex-col rounded-xl border-2 border-orange-400 bg-orange-50/70 overflow-hidden shadow-xs">
+        <div class="bg-gradient-to-r from-orange-600 to-amber-700 text-white px-2.5 py-1.5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-white/20 border border-white/50 flex items-center justify-center font-black text-xs">3</div>
+          <div>
+            <h3 class="font-extrabold text-[11px] uppercase tracking-wide leading-tight">AI / ML Engine</h3>
+            <p class="text-[8px] text-orange-200 font-medium">Ensemble Hazard Scoring</p>
+          </div>
+        </div>
+
+        <div class="p-2 flex-1 flex flex-col justify-between space-y-1 text-[9px]">
+          <div class="bg-white border border-orange-200 rounded-lg p-1.5 shadow-2xs">
+            <span class="font-bold text-slate-900 text-[8.5px] block mb-1">🤖 Model Ensemble Stack</span>
+            <div class="flex flex-wrap gap-1 text-[7px] font-bold">
+              <span class="bg-orange-100 text-orange-900 px-1 py-0.5 rounded">RandomForest</span>
+              <span class="bg-orange-100 text-orange-900 px-1 py-0.5 rounded">XGBoost</span>
+              <span class="bg-orange-100 text-orange-900 px-1 py-0.5 rounded">CatBoost</span>
+              <span class="bg-orange-100 text-orange-900 px-1 py-0.5 rounded">NeuralNet</span>
+            </div>
+          </div>
+
+          <div class="bg-white border border-orange-200 rounded-lg p-1.5 text-center shadow-2xs">
+            <span class="text-[8px] text-slate-500 font-bold uppercase">Probabilistic Risk Output</span>
+            <div class="text-lg font-black text-red-600 leading-tight">P(risk) = 0.82</div>
+            <div class="grid grid-cols-4 gap-0.5 text-[6.5px] font-bold mt-1">
+              <span class="bg-red-500 text-white rounded py-0.5">High ≥.75</span>
+              <span class="bg-orange-400 text-white rounded py-0.5">Mod .50</span>
+              <span class="bg-yellow-400 text-slate-900 rounded py-0.5">Low .25</span>
+              <span class="bg-green-500 text-white rounded py-0.5">Min &lt;.25</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 text-white rounded-lg p-1.5 flex items-center justify-between shadow-xs">
+            <div class="leading-tight">
+              <span class="text-[7.5px] text-slate-400 block font-bold">BENCHMARK</span>
+              <span class="text-[9px] text-orange-400 font-extrabold">ROC-AUC</span>
+            </div>
+            <span class="text-xl font-black text-white">0.894</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 4: DYNAMIC RISK & SAFE ROUTING ENGINE ── -->
+      <div class="flex flex-col rounded-xl border-2 border-purple-400 bg-purple-50/70 overflow-hidden shadow-xs">
+        <div class="bg-gradient-to-r from-purple-700 to-indigo-800 text-white px-2.5 py-1.5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-white/20 border border-white/50 flex items-center justify-center font-black text-xs">4</div>
+          <div>
+            <h3 class="font-extrabold text-[11px] uppercase tracking-wide leading-tight">Dynamic Risk Engine</h3>
+            <p class="text-[8px] text-purple-200 font-medium">3D Dijkstra Safe Routing</p>
+          </div>
+        </div>
+
+        <div class="p-2 flex-1 flex flex-col justify-between space-y-1 text-[9px]">
+          <div class="bg-white border border-purple-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-calculator text-purple-600"></i> Dynamic Cost Surface
+            </div>
+            <code class="text-[7px] bg-slate-100 text-purple-900 p-1 rounded block font-mono">
+              Cost = Dist×(1+Risk×12)+Pen
+            </code>
+          </div>
+
+          <div class="bg-white border border-purple-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-route text-purple-600"></i> 3D Dijkstra Graph Router
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Auto 400m hazard buffer bypass; avoids flooded bridges</p>
+          </div>
+
+          <div class="bg-white border border-purple-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-arrows-rotate text-purple-600"></i> Live Dynamic Reroute
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Sub-second recalculation upon new InSAR slip or citizen blocker</p>
+          </div>
+
+          <div class="bg-purple-100 rounded-md p-1 border border-purple-300 text-center text-[8px] font-bold text-purple-950">
+            <i class="fa-solid fa-person-walking-dashed-line-arrow-right mr-1 text-purple-700"></i> Zero-Loss Evacuation Corridor
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 5: 3D GIS & COMMAND DASHBOARD ── -->
+      <div class="flex flex-col rounded-xl border-2 border-indigo-500 bg-indigo-50/70 overflow-hidden shadow-xs">
+        <div class="bg-gradient-to-r from-indigo-700 to-blue-950 text-white px-2.5 py-1.5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-white/20 border border-white/50 flex items-center justify-center font-black text-xs">5</div>
+          <div>
+            <h3 class="font-extrabold text-[11px] uppercase tracking-wide leading-tight">3D GIS Command</h3>
+            <p class="text-[8px] text-indigo-200 font-medium">Tactical Multi-Agency Ops</p>
+          </div>
+        </div>
+
+        <div class="p-2 flex-1 flex flex-col justify-between space-y-1 text-[9px]">
+          <div class="bg-white border border-indigo-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-cube text-indigo-600"></i> 3D WebGL Digital Twin
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Interactive DEM terrain, slope extrusion &amp; flood runoff</p>
+          </div>
+
+          <div class="bg-white border border-indigo-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-shield-halved text-indigo-600"></i> Tactical Incident Layer
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[6.5px] font-bold text-slate-700">
+              <span>⚠️ Debris Slip</span>
+              <span>🚫 Road Closure</span>
+              <span>🌉 Bridge Status</span>
+              <span>⛺ Safe Shelters</span>
+            </div>
+          </div>
+
+          <div class="bg-white border border-indigo-200 rounded-lg p-1.5 shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[8.5px] mb-0.5">
+              <i class="fa-solid fa-truck-medical text-indigo-600"></i> NDRF/SDRF Dispatch
+            </div>
+            <p class="text-[7.5px] text-slate-600 leading-tight">Resource allocation, vehicle GPS tracking &amp; priority queue</p>
+          </div>
+
+          <div class="bg-indigo-100 rounded-md p-1 border border-indigo-300 text-center text-[8px] font-bold text-indigo-950">
+            <i class="fa-solid fa-desktop mr-1 text-indigo-700"></i> Government Web Dashboard
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ BOTTOM LAYER: TWO ADJUSTED TIERS (ALERTS/MESH + TECH STACK) ═══ -->
+    <div class="grid grid-cols-12 gap-2.5 pt-1">
+
+      <!-- LEFT: ALERTS, RESQBOT & OFF-GRID MESH CONNECTIVITY (Span 7) -->
+      <div class="col-span-7 bg-slate-50 border-2 border-slate-800 rounded-xl p-2.5 flex flex-col justify-between shadow-xs">
+        <div class="flex items-center justify-between border-b border-slate-300 pb-1 mb-1.5">
+          <span class="font-black text-[10px] text-slate-950 uppercase tracking-wide flex items-center gap-1.5">
+            <i class="fa-solid fa-tower-cell text-red-600"></i>
+            <span>MULTI-CHANNEL ALERTS &amp; OFF-GRID MESH CONNECTIVITY</span>
+          </span>
+          <span class="text-[7.5px] bg-red-100 text-red-900 font-bold px-1.5 py-0.2 rounded border border-red-300">Zero Tower Dependency</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-1.5 text-[8.5px]">
+          <!-- PWA & Mobile -->
+          <div class="bg-white border border-slate-300 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs">
+            <div class="flex items-center gap-1 font-bold text-slate-900">
+              <i class="fa-solid fa-mobile-screen text-blue-600 text-xs"></i>
+              <span>Citizen App</span>
+            </div>
+            <p class="text-[7px] text-slate-500 mt-0.5">Push warnings, SOS broadcast, photo geo-tag</p>
+          </div>
+
+          <!-- SMS & IVR Regional -->
+          <div class="bg-white border border-slate-300 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs">
+            <div class="flex items-center gap-1 font-bold text-slate-900">
+              <i class="fa-solid fa-comment-sms text-amber-600 text-xs"></i>
+              <span>SMS / IVR</span>
+            </div>
+            <p class="text-[7px] text-slate-500 mt-0.5">NER Languages (Assamese, Bengali, Hindi, etc.)</p>
+          </div>
+
+          <!-- Audio Sirens -->
+          <div class="bg-white border border-slate-300 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs">
+            <div class="flex items-center gap-1 font-bold text-slate-900">
+              <i class="fa-solid fa-bullhorn text-red-600 text-xs"></i>
+              <span>Audio Sirens</span>
+            </div>
+            <p class="text-[7px] text-slate-500 mt-0.5">High-decibel relay at critical landslide choke points</p>
+          </div>
+
+          <!-- BLE / LoRa Mesh -->
+          <div class="bg-blue-50 border-2 border-blue-500 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs">
+            <div class="flex items-center gap-1 font-black text-blue-950">
+              <i class="fa-brands fa-bluetooth-b text-[#0082FC] text-xs"></i>
+              <span>BLE / LoRa Mesh</span>
+            </div>
+            <p class="text-[7px] text-blue-800 font-semibold mt-0.5">P2P peer relay when cellular &amp; power fail</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: COMPACT ENTERPRISE TECH STACK (Span 5) -->
+      <div class="col-span-5 border-2 border-dashed border-slate-800 rounded-xl p-2.5 flex flex-col justify-between bg-slate-50/70 shadow-xs">
+        <div class="flex items-center justify-between border-b border-slate-300 pb-1 mb-1.5">
+          <span class="font-black text-[10px] text-slate-950 uppercase tracking-wide flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-blue-600"></i>
+            <span>PRODUCTION TECH STACK</span>
+          </span>
+          <span class="text-[7.5px] bg-slate-200 text-slate-800 font-bold px-1.5 py-0.2 rounded font-mono">Microservices</span>
+        </div>
+
+        <div class="grid grid-cols-6 gap-1 items-center text-center">
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-[#3776AB] text-white flex items-center justify-center text-[10px]"><i class="fa-brands fa-python"></i></div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">FastAPI</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-[#6DB33F] text-white flex items-center justify-center text-[10px]"><i class="fa-solid fa-leaf"></i></div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">Spring Boot</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-black text-white flex items-center justify-center text-[9px] font-black">N</div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">Next.js 14</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-[#336791] text-white flex items-center justify-center text-[9px]"><i class="fa-solid fa-database"></i></div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">PostGIS</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center text-[9px]"><i class="fa-solid fa-map"></i></div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">MapLibre</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-[9px]"><i class="fa-solid fa-robot"></i></div>
+            <span class="text-[7px] font-bold text-slate-800 mt-0.5">ResQBot</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ BOTTOM FOOTER ═══ -->
+    <div class="bg-slate-950 text-white rounded-lg py-1 px-3 flex items-center justify-between text-[9px] font-bold shadow-md mt-1 border border-slate-800">
+      <span class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>Prototype Status: <span class="text-emerald-400 font-mono">ALL MODULES INTEGRATED (Dijkstra + 3D MapLibre + Mesh + Alerts)</span></span>
+      </span>
+      <span class="text-slate-400 font-mono text-[8.5px]">
+        SIH-2026 | Team 404: The Optimistics | github.com/naveenmohanka/NER-Sentinel
+      </span>
+    </div>
+
+  </div>
+
+</body>
+</html>

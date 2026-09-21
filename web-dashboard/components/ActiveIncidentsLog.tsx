@@ -71,7 +71,7 @@ export default function ActiveIncidentsLog() {
 
   const fetchRiskEngineZones = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/v1/zones");
+      const res = await fetch("http://localhost:8000/api/v1/zones");
       if (res.ok) {
         const data = await res.json();
         setZones(data);
@@ -105,7 +105,7 @@ export default function ActiveIncidentsLog() {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/v1/reports", {
+      const res = await fetch("http://localhost:8000/api/v1/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
