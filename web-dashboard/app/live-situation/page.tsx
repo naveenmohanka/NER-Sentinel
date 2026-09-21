@@ -1,6 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+interface BackendReport {
+  zone_id: string;
+  device_id: string;
+  lng: number;
+  report_id: string;
+  image_url: string | null;
+  report_type: string;
+  offline_synced: boolean;
+  lat: number;
+  timestamp: number;
+}
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
@@ -98,6 +109,36 @@ const mockTeams: ResponderTeam[] = [
 
 export default function LiveSituationPage() {
   const router = useRouter();
+  const [backendReports, setBackendReports] = useState<BackendReport[]>([]);
+const [loadingReports, setLoadingReports] = useState(true);
+const [reportError, setReportError] = useState<string | null>(null);
+
+useEffect(() => {
+  const fetchReports = async () => {
+    try {
+      setLoadingReports(true);
+      setReportError(null);
+
+      const response = await fetch(
+        "http://localhost:8080/api/v1/reports"
+      );
+
+      if (!response.ok) {
+        throw new Error(`Backend returned ${response.status}`);
+      }
+
+      const data: BackendReport[] = await response.json();
+      setBackendReports(data);
+    } catch (error) {
+      console.error("Failed to fetch reports:", error);
+      setReportError("Unable to load live reports");
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  fetchReports();
+}, []);
 
   // Filters State
   const [riskFilter, setRiskFilter] = useState<string>("All");
@@ -108,8 +149,24 @@ export default function LiveSituationPage() {
   const [showFilterOverlay, setShowFilterOverlay] = useState<boolean>(false);
 
   // Dynamic Incident Filtering
+const liveIncidents: Incident[] = backendReports.map((report) => ({
+  id: report.report_id,
+  title: report.report_type,
+  location: report.zone_id,
+  time: new Date(report.timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  }),
+  severity: "HIGH",
+  status: "Active",
+  roadStatus: "BLOCKED",
+  type: "Incident",
+  description: `${report.report_type} reported from ${report.zone_id}`,
+  updated: "Just now",
+  icon: "⚠️",
+}));
   const filteredIncidents = useMemo(() => {
-    return mockIncidents.filter((inc) => {
+    return liveIncidents.filter((inc) => {
       // Risk filter
       if (
         riskFilter !== "All" &&
@@ -143,7 +200,7 @@ export default function LiveSituationPage() {
       }
       return true;
     });
-  }, [riskFilter, roadFilter, typeFilter, searchQuery]);
+  }, [riskFilter, roadFilter, typeFilter, searchQuery, backendReports]);
 
   const handleIncidentClick = (incident: Incident) => {
     if (incident.link) {
