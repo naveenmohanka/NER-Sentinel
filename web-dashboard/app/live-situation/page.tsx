@@ -16,6 +16,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
+import dynamic from "next/dynamic";
+
+const Live2DStreetIncidentMap = dynamic(
+  () => import("@/components/Live2DStreetIncidentMap"),
+  { ssr: false, loading: () => <div className="p-8 text-center text-xs text-gray-500 font-mono">Loading 2D Street Incident Map...</div> }
+);
 
 export interface Incident {
   id: string;
@@ -42,12 +48,12 @@ export interface ResponderTeam {
 const mockIncidents: Incident[] = [
   {
     id: "inc-1",
-    title: "Kalyanpur Flood",
-    location: "Kalyanpur",
+    title: "Ranipool Flash Inundation",
+    location: "Ranipool River Basin",
     severity: "CRITICAL",
     roadStatus: "BLOCKED",
     type: "Incident",
-    description: "Water level rising rapidly. Evacuation recommended.",
+    description: "Teesta feeder river level rising rapidly. Safe evacuation corridor active.",
     updated: "Updated 2 min ago",
     icon: "flood",
     link: "/risk-assessment",
@@ -55,36 +61,36 @@ const mockIncidents: Incident[] = [
   },
   {
     id: "inc-2",
-    title: "NH-27 Road Blockage",
-    location: "Sector 7",
+    title: "NH-10 Himalayan Debris Slide",
+    location: "29th Mile / Coronation Cut",
     severity: "HIGH",
     roadStatus: "BLOCKED",
     type: "Damage",
-    description: "Bridge access blocked by debris. Traffic rerouting.",
+    description: "Hill slope failure along NH-10. Traffic rerouted via alternate NH-717A corridor.",
     updated: "Updated 5 min ago",
     icon: "traffic",
     mapCoords: { top: "55%", left: "35%" },
   },
   {
     id: "inc-3",
-    title: "New Kanpur City Drainage Surge",
-    location: "New Kanpur City",
+    title: "Singtam Teesta Basin Surge",
+    location: "Singtam Valley",
     severity: "HIGH",
     roadStatus: "SUBMERGED",
     type: "Weather Alert",
-    description: "Rainwater overflow along main commercial route.",
+    description: "Glacial & monsoon runoff surge along Teesta riverbed banks.",
     updated: "Updated 12 min ago",
     icon: "water_drop",
     mapCoords: { top: "30%", left: "60%" },
   },
   {
     id: "inc-4",
-    title: "Devipur Power Substation At-Risk",
-    location: "Devipur",
+    title: "Rangpo Hydel Substation Watch",
+    location: "Rangpo Border",
     severity: "MODERATE",
     roadStatus: "CLEAR",
     type: "Damage",
-    description: "Preventative sandbagging and backup power active.",
+    description: "Preventative sandbagging and backup hydro-telemetry active.",
     updated: "Updated 25 min ago",
     icon: "bolt",
   },
@@ -93,16 +99,16 @@ const mockIncidents: Incident[] = [
 const mockTeams: ResponderTeam[] = [
   {
     id: "team-1",
-    name: "Team Alpha",
-    code: "TA",
-    location: "Kalyanpur",
+    name: "SDRF Sikkim Alpha",
+    code: "SA",
+    location: "Ranipool Sector",
     status: "EN ROUTE",
   },
   {
     id: "team-2",
-    name: "Team Bravo",
-    code: "TB",
-    location: "Devipur",
+    name: "NDRF 1st Bn (Patgaon)",
+    code: "NB",
+    location: "Singtam Valley",
     status: "ON SITE",
   },
 ];
@@ -324,136 +330,9 @@ const liveIncidents: Incident[] = backendReports.map((report) => ({
                 </div>
 
                 {/* Map View Canvas */}
-                <div className="flex-1 relative bg-slate-200 overflow-hidden min-h-[480px]">
-                  {/* Top Map Action Bar (Search & Quick Tools) */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20 pointer-events-none gap-3">
-                    {/* Search Input Box */}
-                    <div className="flex-1 max-w-md pointer-events-auto relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">
-                        search
-                      </span>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search Location, Village, or Zone..."
-                        className="w-full pl-9 pr-4 py-2 bg-white/95 backdrop-blur-md border border-[#dcd9db] rounded-xl shadow-md text-xs text-[#1b1b1d] focus:outline-none focus:ring-2 focus:ring-[#515f74]"
-                      />
-                    </div>
-
-                    {/* Quick Tools */}
-                    <div className="flex gap-2 pointer-events-auto">
-                      <button
-                        type="button"
-                        title="Fullscreen"
-                        className="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-[#dcd9db] flex items-center justify-center hover:bg-gray-100 text-[#515f74] transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">
-                          fullscreen
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        title="Share"
-                        className="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-[#dcd9db] flex items-center justify-center hover:bg-gray-100 text-[#515f74] transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">
-                          share
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        title="Refresh"
-                        onClick={() => {
-                          setSearchQuery("");
-                          setRiskFilter("All");
-                          setRoadFilter("All");
-                        }}
-                        className="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-[#dcd9db] flex items-center justify-center hover:bg-gray-100 text-[#515f74] transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">
-                          refresh
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Map Graphic */}
-                  <div
-                    className="absolute inset-0 w-full h-full bg-cover bg-center"
-                    style={{
-                      backgroundImage: "url('/live-situation-map.png')",
-                    }}
-                  />
-
-                  {/* Map Markers Overlay */}
-                  {/* Kalyanpur Flood Critical Marker (Clickable -> /risk-assessment) */}
-                  <Link
-                    href="/risk-assessment"
-                    className="absolute top-[40%] left-[45%] flex flex-col items-center group cursor-pointer z-20 focus:outline-none"
-                    title="Click to view Village Kalyanpur Risk Assessment"
-                  >
-                    <div className="relative flex items-center justify-center">
-                      <span className="absolute w-8 h-8 rounded-full bg-red-600/30 animate-ping pointer-events-none" />
-                      <div className="w-6 h-6 rounded-full bg-[#ba1a1a] border-2 border-white shadow-md flex items-center justify-center text-white relative z-10 group-hover:scale-110 transition-transform">
-                        <span className="material-symbols-outlined text-[14px]">
-                          flood
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-1 bg-white px-2 py-0.5 rounded shadow text-xs font-bold text-[#ba1a1a] border border-red-200 whitespace-nowrap opacity-90 group-hover:opacity-100 transition-opacity">
-                      Kalyanpur Flood
-                    </div>
-                  </Link>
-
-                  {/* High Risk Marker (New Kanpur City area) */}
-                  <div className="absolute top-[30%] left-[60%] flex flex-col items-center group cursor-pointer z-10 pointer-events-none select-none">
-                    <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-white shadow flex items-center justify-center text-white">
-                      <span className="material-symbols-outlined text-[12px]">
-                        water_drop
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Road Block Marker (Sector 7 / Panki area) */}
-                  <div className="absolute top-[55%] left-[35%] flex flex-col items-center group cursor-pointer z-10 pointer-events-none select-none">
-                    <div className="w-5 h-5 rounded-full bg-[#ba1a1a] border-2 border-white shadow flex items-center justify-center text-white">
-                      <span className="material-symbols-outlined text-[12px]">
-                        block
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Overlay Controls Bottom Right */}
-                  <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-10">
-                    <button
-                      type="button"
-                      aria-label="Zoom in"
-                      className="w-9 h-9 bg-white rounded-lg shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-[#1b1b1d]"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        add
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Zoom out"
-                      className="w-9 h-9 bg-white rounded-lg shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-[#1b1b1d]"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        remove
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="My Location"
-                      className="w-9 h-9 bg-white rounded-lg shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-[#1b1b1d] mt-1"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        my_location
-                      </span>
-                    </button>
-                  </div>
+                <div className="flex-1 relative w-full overflow-hidden min-h-[500px]">
+                  <Live2DStreetIncidentMap />
+                </div>
 
                   {/* Map Legend Bottom Left */}
                   <div className="absolute left-4 bottom-4 bg-white/95 backdrop-blur-md p-3 rounded-xl shadow-lg border border-gray-200 z-10 text-xs font-medium space-y-1.5">
@@ -479,7 +358,6 @@ const liveIncidents: Incident[] = backendReports.map((report) => ({
                   </div>
                 </div>
               </div>
-            </div>
 
             {/* Right Column: Active Situations, Responder Status, KPI Cards */}
             <div className="flex flex-col gap-4 h-full">

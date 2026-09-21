@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import HelpChatWidget from "@/components/HelpChatWidget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,9 +36,14 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+        />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[#f6f3f5] text-[#1b1b1d]">
         {children}
+        <HelpChatWidget />
       </body>
     </html>
   );
