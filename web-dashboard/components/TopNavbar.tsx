@@ -1,10 +1,68 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 interface TopNavbarProps {
   title?: string;
 }
 
-export default function TopNavbar({ title = "Command Dashboard" }: TopNavbarProps) {
+function formatDateTime(date: Date) {
+  const day = Number(
+    new Intl.DateTimeFormat("en-IN", {
+      day: "numeric",
+      timeZone: "Asia/Kolkata",
+    }).format(date)
+  );
+
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+
+  const month = new Intl.DateTimeFormat("en-IN", {
+    month: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+
+  const year = new Intl.DateTimeFormat("en-IN", {
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+
+  const weekday = new Intl.DateTimeFormat("en-IN", {
+    weekday: "long",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+
+  const time = new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+
+  return `${day}${suffix} ${month}, ${year} | ${weekday} | ${time}`;
+}
+
+export default function TopNavbar({
+  title = "Command Dashboard",
+}: TopNavbarProps) {
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setCurrentTime(new Date());
+
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header className="sticky top-0 bg-white border-b border-[#e2e8f0] shadow-xs flex justify-between items-center h-16 px-6 w-full z-20">
       {/* Title */}
@@ -18,7 +76,7 @@ export default function TopNavbar({ title = "Command Dashboard" }: TopNavbarProp
       <div className="flex items-center gap-4 md:gap-5 text-sm">
         {/* Date & Time */}
         <span className="text-xs md:text-sm text-[#515f74] font-medium hidden sm:inline-block">
-          24th Oct, 2023 | Tuesday | 10:44 AM
+          {currentTime ? formatDateTime(currentTime) : "Loading..."}
         </span>
 
         {/* System Status */}
@@ -38,7 +96,9 @@ export default function TopNavbar({ title = "Command Dashboard" }: TopNavbarProp
           aria-label="Notifications"
           className="text-[#515f74] hover:text-[#1b1b1d] hover:bg-gray-100 p-1.5 rounded-full transition-colors relative"
         >
-          <span className="material-symbols-outlined text-[22px]">notifications</span>
+          <span className="material-symbols-outlined text-[22px]">
+            notifications
+          </span>
         </button>
 
         {/* Profile Avatar */}
@@ -54,4 +114,3 @@ export default function TopNavbar({ title = "Command Dashboard" }: TopNavbarProp
     </header>
   );
 }
-
