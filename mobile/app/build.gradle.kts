@@ -37,9 +37,6 @@ android {
     buildFeatures {
         compose = true
     }
-    kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + listOf("-Xskip-metadata-version-check")
-    }
 }
 
 dependencies {
