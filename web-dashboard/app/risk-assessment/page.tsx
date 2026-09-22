@@ -73,7 +73,7 @@ export default function RiskAssessmentPage() {
                   Location Context
                 </h3>
                 <Link
-                  href="/"
+                  href="/dashboard"
                   className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[14px]">
