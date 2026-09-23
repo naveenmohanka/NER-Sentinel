@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/config";
 
 interface InSARZone {
   zone_id: string;
@@ -56,7 +57,7 @@ export default function InSARMonitor() {
   useEffect(() => {
     const fetchInSAR = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/insar");
+        const res = await fetch(`${API_BASE_URL}/api/v1/insar`);
         if (res.ok) {
           const data = await res.json();
           setZones(data.zones);

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/config";
 
 interface IncidentMarker {
   id: string;
@@ -15,54 +16,11 @@ interface IncidentMarker {
   icon: string;
 }
 
-const incidentData: IncidentMarker[] = [
-  {
-    id: "inc-1",
-    title: "Ranipool Flash Inundation",
-    location: "Ranipool River Basin (Gangtok)",
-    lat: 27.2789,
-    lng: 88.5944,
-    severity: "CRITICAL",
-    roadStatus: "BLOCKED",
-    link: "/risk-assessment",
-    icon: "flood"
-  },
-  {
-    id: "inc-2",
-    title: "NH-10 Himalayan Debris Slide",
-    location: "NH-10 Corridor (29th Mile)",
-    lat: 27.2600,
-    lng: 88.5800,
-    severity: "HIGH",
-    roadStatus: "BLOCKED",
-    icon: "traffic"
-  },
-  {
-    id: "inc-3",
-    title: "Singtam Teesta Basin Surge",
-    location: "Singtam Valley Sector",
-    lat: 27.2317,
-    lng: 88.4992,
-    severity: "HIGH",
-    roadStatus: "SUBMERGED",
-    icon: "water_drop"
-  },
-  {
-    id: "inc-4",
-    title: "Bhusuk Mountain Ridge Slide",
-    location: "Bhusuk Ridge (1357m)",
-    lat: 27.3500,
-    lng: 88.6200,
-    severity: "MODERATE",
-    roadStatus: "WATCH",
-    icon: "landscape"
-  }
-];
-
 export default function Live2DStreetIncidentMap() {
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [mapStyle, setMapStyle] = useState<"google_streets" | "google_hybrid" | "google_terrain">("google_streets");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIncident, setSelectedIncident] = useState<IncidentMarker | null>(null);
@@ -75,7 +33,7 @@ export default function Live2DStreetIncidentMap() {
 
       try {
         const mlgl = await import("maplibre-gl");
-        maplibre = mlgl.default || mlgl;
+        maplibre = (mlgl as any).default || mlgl;
 
         // Direct Google Maps Live Tiles Integration (Google Streets / Hybrid / Terrain)
         const map = new maplibre.Map({
@@ -105,9 +63,9 @@ export default function Live2DStreetIncidentMap() {
                   "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
                 ],
                 tileSize: 256,
-                attribution: "Google Maps"
+                attribution: "Google Satellite Hybrid"
               },
-              // 3. Google Live Physical Terrain
+              // 3. Google Live Terrain (Contour & Hillshade)
               "google-terrain": {
                 type: "raster",
                 tiles: [
@@ -117,7 +75,7 @@ export default function Live2DStreetIncidentMap() {
                   "https://mt3.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
                 ],
                 tileSize: 256,
-                attribution: "Google Maps"
+                attribution: "Google Terrain"
               }
             },
             layers: [
@@ -126,7 +84,7 @@ export default function Live2DStreetIncidentMap() {
                 type: "raster",
                 source: "google-streets",
                 minzoom: 0,
-                maxzoom: 21,
+                maxzoom: 22,
                 layout: { visibility: "visible" }
               },
               {
@@ -134,7 +92,7 @@ export default function Live2DStreetIncidentMap() {
                 type: "raster",
                 source: "google-hybrid",
                 minzoom: 0,
-                maxzoom: 21,
+                maxzoom: 22,
                 layout: { visibility: "none" }
               },
               {
@@ -142,26 +100,91 @@ export default function Live2DStreetIncidentMap() {
                 type: "raster",
                 source: "google-terrain",
                 minzoom: 0,
-                maxzoom: 21,
+                maxzoom: 22,
                 layout: { visibility: "none" }
               }
             ]
           },
-          center: [88.6065, 27.3000],
-          zoom: 13.0,
-          maxZoom: 20,
-          antialias: true
+          center: [88.5944, 27.2789], // Focused on Ranipool - NH10 - Gangtok Corridor
+          zoom: 14.5,
+          pitch: 0,
+          bearing: 0,
+          attributionControl: false
         });
 
         mapInstanceRef.current = map;
 
-        // Navigation controls
-        map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
-        map.addControl(new maplibre.FullscreenControl(), "top-right");
+        // Add standard navigation controls
+        map.addControl(new maplibre.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
 
-        map.on("load", () => {
-          // Render Incident Pins
-          incidentData.forEach((inc) => {
+        map.on("load", async () => {
+          // Fetch dynamic incidents from FastAPI
+          const dynamicMarkers: IncidentMarker[] = [];
+
+          try {
+            const [alertsRes, reportsRes] = await Promise.all([
+              fetch(`${API_BASE_URL}/api/v1/alerts`).then((r) => (r.ok ? r.json() : null)),
+              fetch(`${API_BASE_URL}/api/v1/reports`).then((r) => (r.ok ? r.json() : null))
+            ]);
+
+            // Add alerts
+            if (alertsRes?.alerts && Array.isArray(alertsRes.alerts)) {
+              alertsRes.alerts.forEach((alt: any) => {
+                if (alt.location?.latitude && alt.location?.longitude) {
+                  dynamicMarkers.push({
+                    id: alt.id,
+                    title: alt.title,
+                    location: alt.location.area || "Sikkim Corridor",
+                    lat: alt.location.latitude,
+                    lng: alt.location.longitude,
+                    severity: alt.severity === "RED" ? "CRITICAL" : alt.severity === "ORANGE" ? "HIGH" : "MODERATE",
+                    roadStatus: alt.type === "LANDSLIDE" ? "BLOCKED" : "WATCH",
+                    link: "/risk-assessment",
+                    icon: alt.type === "LANDSLIDE" ? "terrain" : "flood"
+                  });
+                }
+              });
+            }
+
+            // Add reports
+            if (reportsRes?.reports && Array.isArray(reportsRes.reports)) {
+              reportsRes.reports.forEach((rep: any, idx: number) => {
+                if (rep.lat && rep.lng) {
+                  dynamicMarkers.push({
+                    id: rep.report_id || `REP-${idx + 1}`,
+                    title: `Citizen: ${rep.report_type} (${rep.device_id || "Field App"})`,
+                    location: `Lat ${rep.lat.toFixed(4)}, Lng ${rep.lng.toFixed(4)}`,
+                    lat: rep.lat,
+                    lng: rep.lng,
+                    severity: (rep.report_type || "").toLowerCase().includes("landslide") ? "CRITICAL" : "HIGH",
+                    roadStatus: "SUBMERGED",
+                    link: "/risk-assessment",
+                    icon: "report_problem"
+                  });
+                }
+              });
+            }
+          } catch (e) {
+            console.error("Failed to load map markers from API:", e);
+          }
+
+          // Fallback ranipool hub point if empty
+          if (dynamicMarkers.length === 0) {
+            dynamicMarkers.push({
+              id: "inc-1",
+              title: "Ranipool Flash Inundation",
+              location: "Ranipool River Basin (Gangtok)",
+              lat: 27.2789,
+              lng: 88.5944,
+              severity: "CRITICAL",
+              roadStatus: "BLOCKED",
+              link: "/risk-assessment",
+              icon: "flood"
+            });
+          }
+
+          // Render Live Interactive Markers
+          dynamicMarkers.forEach((inc) => {
             const isCritical = inc.severity === "CRITICAL";
             const isHigh = inc.severity === "HIGH";
 
@@ -174,18 +197,18 @@ export default function Live2DStreetIncidentMap() {
 
             el.innerHTML = `
               <div style="
-                width: 32px;
-                height: 32px;
+                width: 38px;
+                height: 38px;
+                background: ${isCritical ? "#ba1a1a" : isHigh ? "#f97316" : "#eab308"};
+                border: 3px solid white;
                 border-radius: 50%;
-                background: ${isCritical ? "#ba1a1a" : isHigh ? "#ea580c" : "#eab308"};
-                border: 2.5px solid white;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.35);
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                box-shadow: 0 0 ${isCritical ? "16px rgba(186, 26, 26, 0.9)" : "8px rgba(0,0,0,0.3)"};
                 color: white;
-                font-weight: bold;
                 font-size: 16px;
+                transition: transform 0.2s ease;
               ">
                 ${isCritical ? "⚠️" : isHigh ? "🌊" : "🪨"}
               </div>
@@ -200,7 +223,7 @@ export default function Live2DStreetIncidentMap() {
                 white-space: nowrap;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.25);
               ">
-                ${inc.title.split(" ")[0]} ${inc.severity === "CRITICAL" ? "🔴" : ""}
+                ${inc.title.slice(0, 15)} ${inc.severity === "CRITICAL" ? "🔴" : ""}
               </div>
             `;
 
@@ -212,7 +235,7 @@ export default function Live2DStreetIncidentMap() {
               }
             });
 
-            new maplibre.Marker({ element: el })
+            const marker = new maplibre.Marker({ element: el })
               .setLngLat([inc.lng, inc.lat])
               .setPopup(
                 new maplibre.Popup({ offset: 25 }).setHTML(`
@@ -223,6 +246,8 @@ export default function Live2DStreetIncidentMap() {
                 `)
               )
               .addTo(map);
+
+            markersRef.current.push(marker);
           });
         });
       } catch (err) {
@@ -258,81 +283,117 @@ export default function Live2DStreetIncidentMap() {
     if (q.includes("ranipool")) {
       map.flyTo({ center: [88.5944, 27.2789], zoom: 16.5, duration: 1500 });
     } else if (q.includes("gangtok")) {
-      map.flyTo({ center: [88.6138, 27.3314], zoom: 16.0, duration: 1500 });
+      map.flyTo({ center: [88.6138, 27.3314], zoom: 15.5, duration: 1500 });
     } else if (q.includes("singtam")) {
       map.flyTo({ center: [88.4992, 27.2317], zoom: 16.0, duration: 1500 });
     } else if (q.includes("bhusuk")) {
       map.flyTo({ center: [88.6200, 27.3500], zoom: 16.0, duration: 1500 });
-    } else if (q.includes("nh-10") || q.includes("nh10")) {
-      map.flyTo({ center: [88.5800, 27.2600], zoom: 16.0, duration: 1500 });
-    } else {
-      map.flyTo({ center: [88.6065, 27.3000], zoom: 14.0, duration: 1200 });
     }
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] rounded-2xl overflow-hidden bg-slate-100 border border-[#dcd9db]">
-      {/* Google Live Map Container */}
-      <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
+    <div className="relative w-full h-full min-h-[460px]">
+      {/* MapLibre DOM Node */}
+      <div ref={mapContainerRef} className="w-full h-full min-h-[460px]" />
 
-      {/* Floating Google Layer Switcher (Top Left) */}
-      <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-xl p-1 shadow-lg border border-gray-200 text-xs font-semibold">
-        <button
-          type="button"
-          onClick={() => switchGoogleLayer("google_streets")}
-          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_streets" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
-        >
-          📍 Google Streets
-        </button>
-        <button
-          type="button"
-          onClick={() => switchGoogleLayer("google_hybrid")}
-          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_hybrid" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
-        >
-          🛰️ Google Satellite
-        </button>
-        <button
-          type="button"
-          onClick={() => switchGoogleLayer("google_terrain")}
-          className={`px-2.5 py-1 rounded-lg transition-colors ${mapStyle === "google_terrain" ? "bg-blue-600 text-white font-bold" : "text-gray-700 hover:bg-gray-100"}`}
-        >
-          🏔️ Google Terrain
-        </button>
-      </div>
-
-      {/* Floating Google-Style Search Bar (Top Right) */}
-      <div className="absolute top-16 left-4 z-20 max-w-sm w-full">
-        <form
-          onSubmit={handleSearchSubmit}
-          className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-xl p-1.5 shadow-lg border border-gray-200"
-        >
-          <span className="material-symbols-outlined text-gray-500 pl-2 text-[20px]">search</span>
+      {/* Top Floating Controls: Search & Google Maps Layer Switcher */}
+      <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-10">
+        {/* Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="pointer-events-auto flex items-center bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 px-2.5 py-1.5 min-w-[240px] max-w-sm">
+          <span className="material-symbols-outlined text-gray-400 text-[18px] mr-1.5">search</span>
           <input
             type="text"
+            placeholder="Search Ranipool, Singtam, NH-10..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Gangtok, Ranipool, Singtam, NH-10..."
-            className="flex-1 bg-transparent text-xs font-semibold text-gray-800 outline-none pr-2"
+            className="w-full text-xs text-gray-800 bg-transparent outline-none placeholder-gray-400 font-medium"
           />
-          <button
-            type="submit"
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
-          >
-            Locate
+          <button type="submit" className="text-[11px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 transition-colors">
+            Go
           </button>
         </form>
+
+        {/* Google Map Mode Switcher */}
+        <div className="pointer-events-auto flex items-center bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 p-1 gap-1">
+          <button
+            type="button"
+            onClick={() => switchGoogleLayer("google_streets")}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              mapStyle === "google_streets"
+                ? "bg-[#1b1b1d] text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[15px]">map</span>
+            <span>Google Streets</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => switchGoogleLayer("google_hybrid")}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              mapStyle === "google_hybrid"
+                ? "bg-[#1b1b1d] text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[15px]">satellite_alt</span>
+            <span>Satellite Hybrid</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => switchGoogleLayer("google_terrain")}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              mapStyle === "google_terrain"
+                ? "bg-[#1b1b1d] text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[15px]">terrain</span>
+            <span>Terrain</span>
+          </button>
+        </div>
       </div>
 
-      {/* Floating Bottom Left: Google Maps Status Badge */}
-      <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 border border-gray-200 shadow-lg text-xs space-y-0.5">
-        <div className="flex items-center gap-1.5 font-bold text-gray-900">
-          <span className="text-blue-600">🌐</span>
-          <span>Google Maps Live Integration</span>
+      {/* Selected Incident Drawer / Bottom Banner */}
+      {selectedIncident && (
+        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl p-3 shadow-xl z-10 flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-sm ${
+              selectedIncident.severity === "CRITICAL" ? "bg-[#ba1a1a]" : "bg-orange-600"
+            }`}>
+              <span className="material-symbols-outlined text-[20px]">{selectedIncident.icon}</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <span>{selectedIncident.title}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-100 text-[#ba1a1a] font-bold">
+                  {selectedIncident.severity}
+                </span>
+              </h4>
+              <p className="text-[11px] text-gray-600">{selectedIncident.location} • Status: <b>{selectedIncident.roadStatus}</b></p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {selectedIncident.link && (
+              <button
+                onClick={() => router.push(selectedIncident.link!)}
+                className="px-3 py-1.5 bg-[#ba1a1a] hover:bg-[#961212] text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+              >
+                Deep Risk Analysis →
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedIncident(null)}
+              className="p-1 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        <p className="text-[10px] text-gray-500 font-mono">
-          Real-time Google vector roads, POIs, and hybrid satellite tiles.
-        </p>
-      </div>
+      )}
     </div>
   );
 }

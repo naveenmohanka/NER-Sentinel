@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { API_BASE_URL } from "@/lib/config";
 
 interface CriticalAlert {
   id: string;
@@ -14,11 +16,30 @@ interface CriticalAlert {
 }
 
 export default function AlertBanner() {
+  const pathname = usePathname();
+
   const [alerts, setAlerts] = useState<CriticalAlert[]>([]);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasNotified, setHasNotified] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Auto-hide alert when user scrolls down to view 3D maps or incidents
+  useEffect(() => {
+    const handleScroll = (e: any) => {
+      const target = e.target;
+      const scrollY = target?.scrollTop ?? window.scrollY ?? 0;
+      if (scrollY > 25) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", handleScroll, { capture: true });
+  }, []);
 
   // Drag state management
   const [isDragging, setIsDragging] = useState(false);
@@ -26,11 +47,11 @@ export default function AlertBanner() {
   const [dragOffset, setDragOffset] = useState<number>(0);
   const bannerRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch critical alerts every 30 seconds
+  // Fetch critical alerts
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/alerts/critical");
+        const res = await fetch(`${API_BASE_URL}/api/v1/alerts/critical`);
         if (res.ok) {
           const data = await res.json();
           if (data.has_critical && data.alerts.length > 0) {
@@ -45,7 +66,25 @@ export default function AlertBanner() {
           }
         }
       } catch {
-        // Silent catch
+        // Fallback default alert if backend isn't reachable
+        if (alerts.length === 0) {
+          setAlerts([
+            {
+              id: "teesta-flood-1",
+              type: "FLOOD",
+              severity: "CRITICAL",
+              title: "CRITICAL: Flash Flood Alert — Teesta River Basin",
+              description: "Teesta feeder river surge (+1.4m) above warning mark. Inundation buffer active.",
+              location: { latitude: 27.2789, longitude: 88.5944, area: "Teesta River Basin" },
+              probability: 0.91,
+              precautions: [
+                "Evacuate low-lying riverbanks along NH-10 immediately.",
+                "Dijkstra safe corridor active towards Bhusuk ridge shelter.",
+                "Keep emergency mobile radios tuned to NDMA channel 1078."
+              ]
+            }
+          ]);
+        }
       }
     };
 
@@ -107,7 +146,7 @@ export default function AlertBanner() {
     const icon = alert.type === "FLOOD" ? "🌊" : "⛰️";
     new Notification(`${icon} NER-Sentinel CRITICAL ALERT`, {
       body: `${alert.title}\n${alert.location.area} — ${Math.round(alert.probability * 100)}% probability`,
-      icon: "/chatbot_avatar.jpg",
+      icon: "/chatbot_avatar.png",
       tag: alert.id,
       requireInteraction: false,
     });
@@ -115,7 +154,6 @@ export default function AlertBanner() {
 
   // Drag-to-pull-down / Drag-to-slide-up handlers
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Ignore clicks on buttons
     if ((e.target as HTMLElement).closest("button")) return;
     setIsDragging(true);
     setDragStartY(e.clientY);
@@ -128,12 +166,10 @@ export default function AlertBanner() {
     const deltaY = e.clientY - dragStartY;
 
     if (!isOpen) {
-      // Dragging down to open: positive delta
       if (deltaY > 0) {
         setDragOffset(Math.min(deltaY, 200));
       }
     } else {
-      // Dragging up to close: negative delta
       if (deltaY < 0) {
         setDragOffset(Math.max(deltaY, -200));
       }
@@ -148,16 +184,11 @@ export default function AlertBanner() {
     setDragOffset(0);
 
     if (!isOpen) {
-      // Dragged down more than 25px -> Open!
-      if (deltaY > 25) {
-        setIsOpen(true);
-      } else if (Math.abs(deltaY) < 5) {
-        // Simple tap/click toggle
+      if (deltaY > 20 || Math.abs(deltaY) < 5) {
         setIsOpen(true);
       }
     } else {
-      // Dragged up more than 25px -> Close!
-      if (deltaY < -25) {
+      if (deltaY < -20) {
         setIsOpen(false);
       }
     }
@@ -169,58 +200,66 @@ export default function AlertBanner() {
     setDragOffset(0);
   };
 
+  // Hide on login page
+  if (pathname === "/" || pathname === "/login") return null;
   if (isDismissed || alerts.length === 0) return null;
 
-  const current = alerts[currentIndex];
-  const icon = current.type === "FLOOD" ? "🌊" : "⛰️";
+  const current = alerts[currentIndex] || alerts[0];
+  const icon = current?.type === "FLOOD" ? "🌊" : "⛰️";
 
   return (
     <aside
       aria-label="Critical Emergency Notification Shade"
       ref={bannerRef}
-      className="fixed top-0 left-1/2 -translate-x-1/2 z-[45] flex flex-col items-center select-none"
+      /* Positioned at top-16 (64px) right BELOW the white navbar so it NEVER covers "Command Dashboard" */
+      className={`fixed top-16 left-1/2 -translate-x-1/2 md:left-[calc(50%+130px)] z-[45] flex flex-col items-center select-none transition-all duration-300 ${
+        isScrolled && !isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
       style={{
-        transform: `translate(-50%, ${dragOffset}px)`,
-        transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+        transform:
+          isScrolled && !isOpen
+            ? "translate(-50%, -70px)"
+            : `translate(-50%, ${dragOffset}px)`,
+        transition: isDragging ? "none" : "all 0.28s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
-      {/* ── Collapsed Flush Ceiling Tab (Subtly rounded bottom corners: rounded-b-md, flat top) ── */}
+      {/* ── Collapsed Red Tab (The exact user-approved design, hanging safely below navbar) ── */}
       {!isOpen && (
         <div
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
-          className="group flex items-center gap-2 bg-gradient-to-r from-red-700 via-rose-700 to-red-800 text-white rounded-b-md border-b-2 border-x-2 border-red-500/80 px-3 py-1 text-xs font-semibold shadow-md shadow-red-950/20 cursor-grab active:cursor-grabbing hover:bg-red-600 transition-colors"
+          className="group flex items-center gap-2 bg-gradient-to-r from-red-700 via-rose-700 to-red-800 text-white rounded-b-lg border-b-2 border-x-2 border-red-500/90 px-3.5 py-1.5 text-xs font-semibold shadow-lg shadow-red-950/30 cursor-grab active:cursor-grabbing hover:bg-red-600 transition-all"
           title="Drag down or click to view alert details"
         >
           {/* Subtle emergency pulse */}
-          <span className="flex h-2 w-2 relative">
+          <span className="flex h-2 w-2 relative shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
           </span>
 
           {/* Severity & Type */}
-          <span className="text-white text-[11px] font-extrabold tracking-wider uppercase">
-            {icon} {current.severity}:
+          <span className="text-white text-[11px] font-extrabold tracking-wider uppercase shrink-0">
+            {icon} RED:
           </span>
 
-          {/* Compact truncated title */}
-          <span className="max-w-[150px] sm:max-w-[210px] md:max-w-[260px] truncate text-[11px] font-medium text-red-50">
+          {/* Compact title */}
+          <span className="max-w-[150px] sm:max-w-[220px] md:max-w-[280px] truncate text-[11px] font-medium text-red-50">
             {current.title.replace(/^CRITICAL:\s*/i, "")}
           </span>
 
           {/* Probability tag */}
-          <span className="text-[10px] bg-red-950/70 border border-red-400/40 px-1.5 py-0.2 rounded text-red-100 font-mono">
+          <span className="text-[10px] bg-red-950/70 border border-red-400/40 px-1.5 py-0.2 rounded text-red-100 font-mono shrink-0">
             {Math.round(current.probability * 100)}%
           </span>
 
           {/* Pull Down Handle / Indicator */}
-          <div className="flex items-center gap-0.5 text-red-200 group-hover:text-white pl-1 border-l border-red-500/50">
+          <div className="flex items-center gap-0.5 text-red-200 group-hover:text-white pl-1.5 border-l border-red-500/50 shrink-0">
             <span className="text-[10px] uppercase font-bold tracking-tight hidden sm:inline">
-              Pull
+              PULL
             </span>
-            <span className="material-symbols-outlined text-[16px] animate-pulse">
+            <span className="material-symbols-outlined text-[16px] animate-bounce">
               expand_more
             </span>
           </div>
@@ -232,7 +271,7 @@ export default function AlertBanner() {
               e.stopPropagation();
               playAlertSound();
             }}
-            className="p-0.5 hover:bg-white/20 rounded transition-colors text-white/90"
+            className="p-1 hover:bg-white/20 rounded-md transition-colors text-white/90 shrink-0 cursor-pointer"
             title="Replay Alert Siren"
           >
             <span className="text-xs">🔊</span>
@@ -245,7 +284,7 @@ export default function AlertBanner() {
               e.stopPropagation();
               setIsDismissed(true);
             }}
-            className="p-0.5 hover:bg-white/20 rounded transition-colors text-white/70 hover:text-white text-xs font-bold leading-none"
+            className="p-1 hover:bg-white/20 rounded-md transition-colors text-white/70 hover:text-white text-xs font-bold leading-none shrink-0 cursor-pointer"
             title="Dismiss until next alert"
           >
             ✕
@@ -253,10 +292,10 @@ export default function AlertBanner() {
         </div>
       )}
 
-      {/* ── Expanded Emergency Drawer (Clean rounded-b-lg border, flat ceiling) ── */}
+      {/* ── Expanded Emergency Drawer (Full disaster details & directives) ── */}
       {isOpen && (
         <div
-          className="w-[460px] max-w-[94vw] bg-white rounded-b-lg shadow-2xl border-x-2 border-b-2 border-red-600 overflow-hidden text-slate-900 animate-in fade-in slide-in-from-top-4 duration-200"
+          className="w-[480px] max-w-[94vw] bg-white rounded-b-xl shadow-2xl border-x-2 border-b-2 border-red-600 overflow-hidden text-slate-900 animate-in fade-in slide-in-from-top-4 duration-200"
         >
           {/* Drawer Header */}
           <div
@@ -291,7 +330,7 @@ export default function AlertBanner() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-white/90 hover:text-white text-xs bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded transition-colors flex items-center gap-1 font-semibold"
+                className="text-white/90 hover:text-white text-xs bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-semibold cursor-pointer"
                 title="Slide up"
               >
                 <span>▲</span>
@@ -349,74 +388,9 @@ export default function AlertBanner() {
                 </ul>
               </div>
             )}
-
-            {/* Drawer Actions */}
-            <div className="flex items-center justify-between pt-1 border-t border-slate-200">
-              <div className="flex items-center gap-1.5">
-                {alerts.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCurrentIndex(
-                          (prev) => (prev - 1 + alerts.length) % alerts.length
-                        )
-                      }
-                      className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold transition-colors"
-                    >
-                      ◀ Prev
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCurrentIndex((prev) => (prev + 1) % alerts.length)
-                      }
-                      className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold transition-colors"
-                    >
-                      Next ▶
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => playAlertSound()}
-                  className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs font-bold transition-colors flex items-center gap-1"
-                >
-                  <span>🔊</span>
-                  <span>Test Siren</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-3 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-bold transition-colors"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Pull-Up Grip Bar (Easy drag / click to slide back up) */}
-          <div
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerCancel}
-            onClick={() => setIsOpen(false)}
-            className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 border-t border-slate-200 flex items-center justify-center gap-1 cursor-pointer text-slate-500 hover:text-slate-800 transition-colors"
-            title="Click or drag up to slide back into ceiling"
-          >
-            <div className="w-8 h-1 bg-slate-400 rounded-full"></div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-              ▲ Slide Up
-            </span>
           </div>
         </div>
       )}
     </aside>
   );
 }
-

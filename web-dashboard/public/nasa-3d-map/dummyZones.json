@@ -1,0 +1,17 @@
+[
+  {
+    "zone_id": "ZONE-A",
+    "center": { "lat": 27.3314, "lng": 88.6138 },
+    "operational_priority": "CRITICAL"
+  },
+  {
+    "zone_id": "ZONE-B",
+    "center": { "lat": 27.3500, "lng": 88.6200 },
+    "operational_priority": "MODERATE"
+  },
+  {
+    "zone_id": "ZONE-C",
+    "center": { "lat": 27.3200, "lng": 88.6350 },
+    "operational_priority": "HIGH"
+  }
+]

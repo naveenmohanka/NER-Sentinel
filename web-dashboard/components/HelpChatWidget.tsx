@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
+import { API_BASE_URL } from "@/lib/config";
 
 interface Message {
   role: "assistant" | "user";
@@ -15,6 +17,7 @@ const quickChips = [
 ];
 
 export default function HelpChatWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -88,7 +91,7 @@ export default function HelpChatWidget() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/chat", {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -122,6 +125,11 @@ export default function HelpChatWidget() {
     }
   };
 
+  // Do not render chat bot on login page or root auth page
+  if (pathname === "/" || pathname === "/login") {
+    return null;
+  }
+
   return (
     <>
       {/* Draggable Floating Chatbot Avatar with Hello Bubble */}
@@ -150,16 +158,16 @@ export default function HelpChatWidget() {
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          className="w-16 h-16 rounded-full overflow-hidden shadow-2xl transition-transform hover:scale-110 active:scale-95 border-3 border-teal-400/80 hover:border-teal-300"
+          className="w-16 h-16 rounded-full overflow-hidden shadow-2xl transition-transform hover:scale-110 active:scale-95 border-3 border-teal-400/80 hover:border-teal-300 bg-slate-900/90 flex items-center justify-center p-1.5"
           style={{
-            boxShadow: "0 0 25px rgba(45, 212, 191, 0.5), 0 4px 15px rgba(0,0,0,0.2)",
+            boxShadow: "0 0 25px rgba(45, 212, 191, 0.5), 0 4px 15px rgba(0,0,0,0.3)",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/chatbot_avatar.jpg"
+            src="/chatbot_avatar.png"
             alt="AI Assistant"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain drop-shadow"
             draggable={false}
           />
         </div>
@@ -183,12 +191,12 @@ export default function HelpChatWidget() {
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-700 text-white p-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30 shadow-md shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30 shadow-md shrink-0 bg-slate-900 flex items-center justify-center p-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/chatbot_avatar.jpg"
+                  src="/chatbot_avatar.png"
                   alt="AI Bot"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div>
@@ -221,9 +229,9 @@ export default function HelpChatWidget() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} gap-2`}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-1 border border-teal-200">
+                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-1 border border-teal-200 bg-slate-900 flex items-center justify-center p-0.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/chatbot_avatar.jpg" alt="Bot" className="w-full h-full object-cover" />
+                    <img src="/chatbot_avatar.png" alt="Bot" className="w-full h-full object-contain" />
                   </div>
                 )}
                 <div
@@ -239,9 +247,9 @@ export default function HelpChatWidget() {
             ))}
             {isLoading && (
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-teal-200">
+                <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-teal-200 bg-slate-900 flex items-center justify-center p-0.5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/chatbot_avatar.jpg" alt="Bot" className="w-full h-full object-cover" />
+                  <img src="/chatbot_avatar.png" alt="Bot" className="w-full h-full object-contain" />
                 </div>
                 <div className="bg-white text-gray-400 px-3 py-2 rounded-xl border border-gray-200 italic text-[11px]">
                   Thinking...

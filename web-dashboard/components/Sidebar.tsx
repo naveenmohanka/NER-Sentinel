@@ -10,7 +10,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", icon: "dashboard", href: "/" },
+  { label: "Dashboard", icon: "dashboard", href: "/dashboard" },
   { label: "Live Situation", icon: "public", href: "/live-situation" },
   { label: "Risk Assessment", icon: "monitoring", href: "/risk-assessment" },
   { label: "Report Hazard", icon: "report_problem", href: "/report-hazard" },
@@ -47,9 +47,7 @@ export default function Sidebar() {
         <nav className="px-2.5 space-y-1 mt-2">
           {navItems.map((item) => {
             const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : item.href !== "#" && pathname.startsWith(item.href);
+              item.href !== "#" && pathname.startsWith(item.href);
 
             return (
               <Link
@@ -104,7 +102,7 @@ export default function Sidebar() {
             <span>Support</span>
           </Link>
           <Link
-            href="#"
+            href="/login"
             className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8f9bb3] hover:text-white hover:bg-white/10 transition-colors"
           >
             <span className="material-symbols-outlined text-base">logout</span>

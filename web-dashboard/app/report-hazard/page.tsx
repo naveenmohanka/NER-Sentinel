@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function ReportHazardPage() {
   const [hazardType, setHazardType] = useState("landslide");
@@ -42,7 +43,7 @@ export default function ReportHazardPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/reports", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/reports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
