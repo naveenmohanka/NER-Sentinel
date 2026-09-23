@@ -44,14 +44,11 @@ public class ApiController {
                 Files.write(filePath, file.getBytes());
                 imageUrl = "/uploads/" + fileName;
             } catch (IOException e) {
-                System.err.println("File save failed: " + e.getMessage());
+                System.err.println("File write failure: " + e.getMessage());
             }
         }
 
-        // Delegate execution to service layer
         Map<String, Object> responseData = riskEngineService.processReport(request, imageUrl);
-
-        // Return HTTP 200 OK with the full analysis payload
         return ResponseEntity.ok(responseData);
     }
 }

@@ -33,10 +33,10 @@ public class RiskEngineService {
                 imageUrl
         );
 
-        // 2. Safely parse AI response values (with fallbacks if null)
+        // 2. Parse AI telemetry values safely with fallbacks
         Double riskScore = 0.5;
         String riskLevel = "MODERATE";
-        String summary = "Telemetry processed successfully.";
+        String summary = "Telemetry ingested and logged.";
 
         if (aiResult != null) {
             if (aiResult.get("risk_score") != null) {
@@ -52,7 +52,7 @@ public class RiskEngineService {
             }
         }
 
-        // 3. Persist record to Supabase (PostgreSQL)
+        // 3. Persist entity to Supabase PostgreSQL database
         ReportEntity entity = new ReportEntity();
         entity.setReportId(reportId);
         entity.setDeviceId(request.getDeviceId());
@@ -67,7 +67,7 @@ public class RiskEngineService {
 
         reportRepository.save(entity);
 
-        // 4. Build complete response map for mobile client
+        // 4. Return full JSON payload to the app
         Map<String, Object> response = new HashMap<>();
         response.put("status", "SUCCESS");
         response.put("report_id", reportId);

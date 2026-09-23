@@ -21,9 +21,10 @@ public class FastApiClient {
     private final RestTemplate restTemplate;
 
     public FastApiClient() {
+        // Enforce 3-second connection and 4-second read timeouts
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(3000); // 3 seconds timeout
-        factory.setReadTimeout(4000);    // 4 seconds read timeout
+        factory.setConnectTimeout(3000);
+        factory.setReadTimeout(4000);
         this.restTemplate = new RestTemplate(factory);
     }
 
@@ -41,7 +42,6 @@ public class FastApiClient {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
-
             ResponseEntity<Map> response = restTemplate.postForEntity(fastApiUrl, requestEntity, Map.class);
             return response.getBody();
 
@@ -51,12 +51,16 @@ public class FastApiClient {
         }
     }
 
+    /**
+     * Fallback response to prevent downstream NullPointerExceptions 
+     * if the Python AI service is offline or unreachable.
+     */
     private Map<String, Object> createFallbackResponse(String reportId, String reportType) {
         Map<String, Object> fallback = new HashMap<>();
         fallback.put("report_id", reportId);
         fallback.put("risk_score", 0.5);
         fallback.put("risk_level", "MODERATE");
-        fallback.put("summary", "Automated telemetry: Risk assessed with baseline heuristic fallback (" + reportType + ").");
+        fallback.put("summary", "Risk assessed with baseline heuristic fallback (" + reportType + ").");
         fallback.put("status", "FALLBACK_PROCESSED");
         return fallback;
     }
