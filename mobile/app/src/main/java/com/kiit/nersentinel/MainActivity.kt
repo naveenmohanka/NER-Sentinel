@@ -2,29 +2,69 @@ package com.kiit.nersentinel
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.kiit.nersentinel.ui.screen.HomeScreen
+import com.kiit.nersentinel.ui.screen.OfficialAlertsScreen
 import com.kiit.nersentinel.ui.screen.ReportIncidentScreen
 import com.kiit.nersentinel.ui.theme.NERSentinelTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContent {
             NERSentinelTheme {
-                ReportIncidentScreen()
+
+                var currentScreen by remember {
+                    mutableStateOf("home")
+                }
+
+                when (currentScreen) {
+
+                    "home" -> {
+
+                        HomeScreen(
+                            onReportIncident = {
+                                currentScreen = "report"
+                            },
+                            onSeeAllAlerts = {
+                                currentScreen = "alerts"
+                            }
+                        )
+                    }
+
+                    "report" -> {
+
+                        BackHandler {
+                            currentScreen = "home"
+                        }
+
+                        ReportIncidentScreen()
+                    }
+
+                    "alerts" -> {
+
+                        BackHandler {
+                            currentScreen = "home"
+                        }
+
+                        OfficialAlertsScreen(
+                            onBack = {
+                                currentScreen = "home"
+                            }
+                        )
+                    }
+                }
             }
         }
-
     }
 }
-
-
