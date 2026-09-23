@@ -25,7 +25,7 @@ jobs:
 
       - name: Build APK
         working-directory: mobile
-        run: ./gradlew assembleDebug
+        run: bash ./gradlew assembleDebug
 
       - name: Rename APK
         run: |
