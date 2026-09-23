@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NER-Sentinel | 3D GIS Intelligence & Landslide Early Warning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- MapLibre GL 3D Terrain Styles & Typography -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 3D WebGL Map Container -->
+  <div id="map"></div>
+
+  <!-- Top Header Overlay -->
+  <header class="top-header">
+    <div class="badge-pulse"></div>
+    <div class="title-box">
+      <h1>NER-Sentinel 3D GIS Intelligence</h1>
+      <p>Himalayan Terrain • Gangtok Sector • Live Landslide Early Warning</p>
+    </div>
+  </header>
+
+  <!-- Legend Overlay -->
+  <aside class="legend-panel">
+    <div class="legend-title">Hazard Priority Zones</div>
+    <div class="legend-item"><span class="dot" style="color: #ef4444; background: #ef4444;"></span> <span>CRITICAL (Immediate Evac)</span></div>
+    <div class="legend-item"><span class="dot" style="color: #f97316; background: #f97316;"></span> <span>HIGH (Warning Alert)</span></div>
+    <div class="legend-item"><span class="dot" style="color: #eab308; background: #eab308;"></span> <span>MODERATE (Watch Mode)</span></div>
+    <div class="legend-item"><span class="dot" style="color: #10b981; background: #10b981;"></span> <span>SAFE / Normal</span></div>
+    
+    <div class="divider"></div>
+    
+    <div class="legend-title">3D Evacuation Routes</div>
+    <div class="legend-item"><span class="route-line" style="color: #38bdf8; background: #38bdf8;"></span> <span>Primary Route (Direct)</span></div>
+    <div class="legend-item"><span class="route-line" style="color: #10b981; background: #10b981;"></span> <span>Alternate Safe Route (Bypass)</span></div>
+  </aside>
+
+  <!-- Floating Control Toolbar -->
+  <div class="control-toolbar">
+    <!-- Camera View Presets -->
+    <div class="camera-presets">
+      <button class="preset-btn active" id="view3DRidge" onclick="setCameraView('ridge')">🏔️ 3D Himalayan Ridge</button>
+      <button class="preset-btn" id="view3DValley" onclick="setCameraView('valley')">🌄 Valley Low-Angle</button>
+      <button class="preset-btn" id="view2DTop" onclick="setCameraView('topdown')">🗺️ 2D Top-Down</button>
+    </div>
+
+    <!-- Toggle 3D Terrain Button -->
+    <button class="btn" id="toggleTerrainBtn" onclick="toggleTerrain()">
+      <span>🏔️ 3D Elevation: <b>ON</b></span>
+    </button>
+
+    <!-- Interactive Simulation Button -->
+    <button class="btn btn-primary" id="toggleZoneA">
+      <span>⚡ Toggle ZONE-A Risk Status</span>
+    </button>
+  </div>
+
+  <!-- MapLibre GL JS & Main Application Logic -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -43,6 +43,29 @@ __pycache__/
 .nasa_power_cache/
 
 # ==========================================
+# Java / Gradle / Maven (Android & Backend)
+# ==========================================
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+*.iws
+*.iml
+*.ipr
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ==========================================
 # OS & IDE Metadata
 # ==========================================
 .DS_Store
