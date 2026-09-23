@@ -76,6 +76,11 @@ class ReportViewModel(
                 // 3. Mark synced only after backend success
                 if (response.isSuccessful) {
 
+                    android.util.Log.d(
+                        "NER_RISK",
+                        "Backend response: ${response.body()}"
+                    )
+
                     repository.markIncidentAsSynced(incidentId)
 
                     onResult(

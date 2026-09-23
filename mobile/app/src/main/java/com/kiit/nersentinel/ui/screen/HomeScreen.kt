@@ -51,6 +51,7 @@ import com.kiit.nersentinel.data.local.DatabaseProvider
 import com.kiit.nersentinel.data.repository.IncidentRepository
 import com.kiit.nersentinel.viewmodel.HomeViewModel
 import com.kiit.nersentinel.viewmodel.HomeViewModelFactory
+import androidx.compose.foundation.clickable
 @Composable
 fun HomeScreen(
     onReportIncident: () -> Unit = {},
@@ -76,7 +77,7 @@ fun HomeScreen(
     )
 
     val reports by homeViewModel.reports.collectAsState()
-
+    val groundReportCount = reports.size
     val alerts = alertViewModel.alerts.collectAsState().value
     Column(
         modifier = Modifier
@@ -117,10 +118,13 @@ fun HomeScreen(
                     .clip(CircleShape)
                     .background(Color.White)
                     .border(
-                        1.dp,
-                        Color(0xFFE4E5E8),
-                        CircleShape
-                    ),
+                        width = 1.dp,
+                        color = Color(0xFFE4E5E8),
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        onSeeAllAlerts()
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -308,7 +312,7 @@ fun HomeScreen(
 
                     RiskSignal(
                         value = "Ground",
-                        status = "2 reports"
+                        status = "$groundReportCount reports"
                     )
 
                     RiskSignal(

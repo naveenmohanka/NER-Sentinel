@@ -47,7 +47,9 @@ fun OfficialAlertsScreen(
             .background(Color(0xFFF6F7F9))
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 14.dp)
-    ) {
+    ) {     Spacer(
+        modifier = Modifier.height(30.dp)
+    )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -62,6 +64,7 @@ fun OfficialAlertsScreen(
                     contentDescription = "Back"
                 )
             }
+
 
             Text(
                 text = "Official Alerts",
