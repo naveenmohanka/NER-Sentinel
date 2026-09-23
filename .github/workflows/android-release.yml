@@ -1,0 +1,40 @@
+name: Build NER Sentinel APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build APK
+        working-directory: mobile
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: |
+          cp mobile/app/build/outputs/apk/debug/app-debug.apk NER-Sentinel.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: NER Sentinel v0.1.${{ github.run_number }}
+          files: NER-Sentinel.apk
+          generate_release_notes: true
