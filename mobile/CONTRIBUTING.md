@@ -195,7 +195,7 @@ gis/
 
 ---
 
-## Shreyas — Unified Command Dashboard
+## Shreyash — Unified Command Dashboard
 
 Primary responsibility:
 
