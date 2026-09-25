@@ -20,7 +20,7 @@ interface ApiService {
 
     // Image upload endpoint
     @Multipart
-    @POST("api/v1/reports/upload")
+    @POST("api/v1/reports")
     suspend fun submitReportWithImage(
         @PartMap reportData: Map<String, @JvmSuppressWildcards RequestBody>,
         @Part image: MultipartBody.Part

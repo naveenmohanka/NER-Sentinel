@@ -3,86 +3,165 @@ package com.example.nersentinel.services;
 import com.example.nersentinel.models.ReportRequest;
 import com.example.nersentinel.models.Zone;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class RiskEngineService {
 
-    private final Map<String, Zone> zones = new ConcurrentHashMap<>();
-    private final List<Map<String, Object>> reports = new ArrayList<>();
-    private int reportCounter = 1;
+    private final Map<String, Zone> zoneMap = new ConcurrentHashMap<>();
+    private final List<Map<String, Object>> reportsList = new ArrayList<>();
+    private final AtomicInteger reportCounter = new AtomicInteger(1);
 
     public RiskEngineService() {
-        zones.put("ZONE-A", new Zone("ZONE-A", 27.3314, 88.6138, 70.0, 80.0));
-        zones.put("ZONE-B", new Zone("ZONE-B", 27.3400, 88.6200, 50.0, 60.0));
-        zones.put("ZONE-C", new Zone("ZONE-C", 27.3500, 88.6300, 30.0, 40.0));
-        zones.values().forEach(this::recalculateZone);
+        initializeZones();
     }
 
-    public synchronized Map<String, Object> processReport(ReportRequest req) {
-        String assignedZoneId = "ZONE-A"; // Default mapping for prototype
-        String reportId = "RPT-" + String.format("%03d", reportCounter++);
+    private void initializeZones() {
+        Zone zoneA = new Zone(
+                "ZONE-A",
+                70.0,
+                80.0,
+                70.0,
+                0,
+                0,
+                "HIGH",
+                Map.of("lat", 27.3314, "lng", 88.6138),
+                List.of(
+                        Map.of("lat", 27.3400, "lng", 88.6000),
+                        Map.of("lat", 27.3400, "lng", 88.6250),
+                        Map.of("lat", 27.3200, "lng", 88.6250),
+                        Map.of("lat", 27.3200, "lng", 88.6000)
+                ),
+                new ArrayList<>(List.of(
+                        "Baseline susceptibility: 70.0",
+                        "Rainfall trigger score: 80.0",
+                        "Total field reports: 0"
+                )),
+                System.currentTimeMillis() / 1000
+        );
+
+        Zone zoneB = new Zone(
+                "ZONE-B",
+                55.0,
+                60.0,
+                55.0,
+                0,
+                0,
+                "MEDIUM",
+                Map.of("lat", 27.3250, "lng", 88.6050),
+                List.of(),
+                new ArrayList<>(List.of("Baseline susceptibility: 55.0", "Rainfall trigger score: 60.0")),
+                System.currentTimeMillis() / 1000
+        );
+
+        Zone zoneC = new Zone(
+                "ZONE-C",
+                30.0,
+                40.0,
+                30.0,
+                0,
+                0,
+                "LOW",
+                Map.of("lat", 27.3100, "lng", 88.5900),
+                List.of(),
+                new ArrayList<>(List.of("Baseline susceptibility: 30.0", "Rainfall trigger score: 40.0")),
+                System.currentTimeMillis() / 1000
+        );
+
+        zoneMap.put(zoneA.getZone_id(), zoneA);
+        zoneMap.put(zoneB.getZone_id(), zoneB);
+        zoneMap.put(zoneC.getZone_id(), zoneC);
+    }
+
+    public List<Zone> getAllZones() {
+        return new ArrayList<>(zoneMap.values());
+    }
+
+    public Zone getZoneById(String zoneId) {
+        return zoneMap.get(zoneId);
+    }
+
+    public List<Map<String, Object>> getAllReports() {
+        return reportsList;
+    }
+
+    public Map<String, Object> processReport(ReportRequest request, String uploadedImageUrl) {
+        String reportId = String.format("RPT-%03d", reportCounter.getAndIncrement());
+
+        // Target zone mapping (default ZONE-A for prototype)
+        String zoneId = "ZONE-A";
+        Zone zone = zoneMap.get(zoneId);
+
+        if (zone != null) {
+            int newReportsCount = zone.getCommunity_reports() + 1;
+            zone.setCommunity_reports(newReportsCount);
+
+            // Dynamic Evidence Confidence calculation
+            int newConfidence;
+            if (newReportsCount == 1) {
+                newConfidence = 40;
+            } else if (newReportsCount == 2) {
+                newConfidence = 65;
+            } else if (newReportsCount == 3) {
+                newConfidence = 85;
+            } else {
+                newConfidence = 95;
+            }
+            zone.setEvidence_confidence(newConfidence);
+
+            // Dynamic Hazard Risk calculation
+            double dynamicHazard = (zone.getBaseline_susceptibility() * 0.4)
+                    + (zone.getRainfall_risk() * 0.4)
+                    + (newConfidence * 0.2);
+            zone.setHazard_risk(Math.round(dynamicHazard * 10.0) / 10.0);
+
+            // Dynamic Operational Priority determination
+            if (zone.getHazard_risk() >= 80.0 && newConfidence >= 85) {
+                zone.setOperational_priority("CRITICAL");
+            } else if (zone.getHazard_risk() >= 65.0) {
+                zone.setOperational_priority("HIGH");
+            } else if (zone.getHazard_risk() >= 45.0) {
+                zone.setOperational_priority("MEDIUM");
+            } else {
+                zone.setOperational_priority("LOW");
+            }
+
+            zone.setUpdated_at(System.currentTimeMillis() / 1000);
+            zone.setReasoning(List.of(
+                    "Baseline susceptibility: " + zone.getBaseline_susceptibility(),
+                    "Rainfall trigger score: " + zone.getRainfall_risk(),
+                    "Total field reports: " + newReportsCount,
+                    "Dynamic evidence confidence: " + newConfidence + "%",
+                    "Calculated hazard score: " + zone.getHazard_risk()
+            ));
+        }
 
         Map<String, Object> storedReport = new HashMap<>();
         storedReport.put("report_id", reportId);
-        storedReport.put("lat", req.getLat());
-        storedReport.put("lng", req.getLng());
-        storedReport.put("report_type", req.getReport_type());
-        storedReport.put("timestamp", req.getTimestamp());
-        storedReport.put("offline_synced", req.isOffline_synced());
-        storedReport.put("zone_id", assignedZoneId);
-        reports.add(storedReport);
+        storedReport.put("device_id", request.getDevice_id());
+        storedReport.put("lat", request.getLat());
+        storedReport.put("lng", request.getLng());
+        storedReport.put("report_type", request.getReport_type());
+        storedReport.put("timestamp", request.getTimestamp());
+        storedReport.put("offline_synced", request.isOffline_synced());
+        storedReport.put("zone_id", zoneId);
+        storedReport.put("image_url", uploadedImageUrl);
 
-        Zone zone = zones.get(assignedZoneId);
-        if (zone != null) {
-            zone.setCommunity_reports(zone.getCommunity_reports() + 1);
-            recalculateZone(zone);
+        reportsList.add(storedReport);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("report_id", reportId);
+        response.put("zone_id", zoneId);
+        response.put("sync_status", "synced");
+        response.put("message", uploadedImageUrl != null ? "Report and image uploaded successfully" : "Report received successfully");
+        if (uploadedImageUrl != null) {
+            response.put("image_url", uploadedImageUrl);
         }
 
-        return Map.of(
-            "success", true,
-            "report_id", reportId,
-            "zone_id", assignedZoneId,
-            "sync_status", "synced",
-            "message", "Report received successfully"
-        );
+        return response;
     }
-
-    private void recalculateZone(Zone zone) {
-        double mlProbability = 50.0;
-        double hazardRisk = (0.40 * zone.getBaseline_susceptibility()) +
-                            (0.40 * zone.getRainfall_risk()) +
-                            (0.20 * mlProbability);
-        zone.setHazard_risk(Math.round(hazardRisk * 100.0) / 100.0);
-
-        int count = zone.getCommunity_reports();
-        int confidence = 0;
-        if (count >= 4) confidence = 95;
-        else if (count == 3) confidence = 85;
-        else if (count == 2) confidence = 65;
-        else if (count == 1) confidence = 40;
-        zone.setEvidence_confidence(confidence);
-
-        if (zone.getHazard_risk() >= 80 && zone.getEvidence_confidence() >= 70) {
-            zone.setOperational_priority("CRITICAL");
-        } else if (zone.getHazard_risk() >= 60) {
-            zone.setOperational_priority("HIGH");
-        } else if (zone.getHazard_risk() >= 40) {
-            zone.setOperational_priority("MODERATE");
-        } else {
-            zone.setOperational_priority("LOW");
-        }
-
-        zone.setUpdated_at(System.currentTimeMillis() / 1000);
-        zone.setReasoning(List.of(
-            "Baseline susceptibility: " + zone.getBaseline_susceptibility(),
-            "Rainfall trigger score: " + zone.getRainfall_risk(),
-            "Total field reports: " + count
-        ));
-    }
-
-    public List<Zone> getAllZones() { return new ArrayList<>(zones.values()); }
-    public Zone getZone(String zoneId) { return zones.get(zoneId); }
-    public List<Map<String, Object>> getAllReports() { return reports; }
 }
