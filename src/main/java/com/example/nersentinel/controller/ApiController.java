@@ -1,4 +1,4 @@
-package com.example.nersentinel.controllers;
+package com.example.nersentinel.controller;
 
 import com.example.nersentinel.models.ReportRequest;
 import com.example.nersentinel.models.Zone;

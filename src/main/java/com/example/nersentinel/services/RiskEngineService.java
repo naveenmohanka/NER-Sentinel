@@ -84,5 +84,8 @@ public class RiskEngineService {
 
     public List<Zone> getAllZones() { return new ArrayList<>(zones.values()); }
     public Zone getZone(String zoneId) { return zones.get(zoneId); }
-    public List<Map<String, Object>> getAllReports() { return reports; }
+
+    public synchronized List<Map<String, Object>> getAllReports() {
+        return new ArrayList<>(reports);
+    }
 }
